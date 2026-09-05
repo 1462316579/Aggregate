@@ -6,6 +6,7 @@ import '../../models/comic_detail.dart';
 import '../../models/video_source.dart';
 import '../../models/reader_settings.dart';
 import '../../services/spider_service_v2.dart';
+import '../../utils/volume_key_handler.dart';
 
 class ComicReaderScreen extends StatefulWidget {
   final ComicDetail comic;
@@ -69,7 +70,33 @@ class _ComicReaderScreenState extends State<ComicReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return VolumeKeyReaderWrapper(
+      config: VolumeKeyConfig(
+        enabled: true,
+        volumeUpAction: VolumeKeyAction.pageUp,
+        volumeDownAction: VolumeKeyAction.pageDown,
+      ),
+      onPageUp: () {
+        if (_isVerticalMode && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.offset - MediaQuery.of(context).size.height * 0.8,
+            duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        } else if (!_isVerticalMode && _currentPage > 0) {
+          _pageController.previousPage(
+              duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        }
+      },
+      onPageDown: () {
+        if (_isVerticalMode && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.offset + MediaQuery.of(context).size.height * 0.8,
+            duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        } else if (!_isVerticalMode && _currentPage < _pages.length - 1) {
+          _pageController.nextPage(
+              duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        }
+      },
+      child: Scaffold(
       backgroundColor: Colors.black,
       body: Stack(children: [
         // 主内容
@@ -99,6 +126,7 @@ class _ComicReaderScreenState extends State<ComicReaderScreen> {
               ],
             )))),
       ]),
+    ),
     );
   }
 

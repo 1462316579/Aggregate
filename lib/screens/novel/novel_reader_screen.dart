@@ -6,6 +6,7 @@ import '../../models/novel_detail.dart';
 import '../../models/reader_settings.dart';
 import '../../models/video_source.dart';
 import '../../services/spider_service_v2.dart';
+import '../../utils/volume_key_handler.dart';
 
 class NovelReaderScreen extends StatefulWidget {
   final NovelDetail novel;
@@ -90,7 +91,33 @@ class _NovelReaderScreenState extends State<NovelReaderScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return VolumeKeyReaderWrapper(
+      config: VolumeKeyConfig(
+        enabled: true,
+        volumeUpAction: VolumeKeyAction.pageUp,
+        volumeDownAction: VolumeKeyAction.pageDown,
+      ),
+      onPageUp: () {
+        if (!_isPagedMode && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.offset - MediaQuery.of(context).size.height * 0.8,
+            duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        } else if (_isPagedMode && _currentPage > 0) {
+          _pageController.previousPage(
+              duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        }
+      },
+      onPageDown: () {
+        if (!_isPagedMode && _scrollController.hasClients) {
+          _scrollController.animateTo(
+            _scrollController.offset + MediaQuery.of(context).size.height * 0.8,
+            duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        } else if (_isPagedMode && _currentPage < _pages.length - 1) {
+          _pageController.nextPage(
+              duration: const Duration(milliseconds: 300), curve: Curves.ease);
+        }
+      },
+      child: Scaffold(
       backgroundColor: _bgColor,
       body: Stack(children: [
         GestureDetector(
@@ -103,6 +130,7 @@ class _NovelReaderScreenState extends State<NovelReaderScreen> {
         if (_showChapters) _buildChapterPanel(),
         if (_showSettings) _buildSettingsPanel(),
       ]),
+    ),
     );
   }
 
