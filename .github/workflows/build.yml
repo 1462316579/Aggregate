@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: 3.22.0
+  FLUTTER_VERSION: 3.29.3
   APP_NAME: hongxi
   DISPLAY_NAME: 宏曦聚合
   PACKAGE_NAME: juhe.homes.app2026
@@ -147,6 +147,13 @@ jobs:
 
       - name: Complete Windows project scaffolding
         run: flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Select Visual Studio 2022 generator
+        shell: pwsh
+        run: |
+          $cmake = Get-ChildItem -Path "$env:FLUTTER_ROOT" -Filter CMakeLists.txt -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (Test-Path windows/flutter/generated_plugins.cmake) { Write-Host 'Windows Flutter project ready' }
+          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
 
       - name: Install dependencies
         run: flutter pub get
