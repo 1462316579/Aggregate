@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F5),
-      body: _currentTab == 0 ? const _HomePage() : _MinePage(),
+      body: _currentTab == 0 ? _HomePage() : _MinePage(),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentTab, onTap: (i) => setState(() => _currentTab = i),
         items: const [
