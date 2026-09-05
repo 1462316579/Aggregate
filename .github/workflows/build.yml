@@ -28,20 +28,12 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build APK (Release)
-        run: flutter build apk --release
+      - name: Build APK
+        run: flutter build apk
 
-      - name: Upload APK to Release
-        uses: softprops/action-gh-release@v1
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: v1.0.0
-          name: 宏曦聚合 v1.0.0
-          body: |
-            🎬 宏曦聚合 v1.0.0
-            
-            📱 Android APK
-            
-            包名: juhe.homes.app2026
-          files: build/app/outputs/flutter-apk/app-release.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: 宏曦聚合-APK
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 30
