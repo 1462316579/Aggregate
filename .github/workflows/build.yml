@@ -40,8 +40,8 @@ jobs:
           rm -rf android
           flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 .
           sed -i 's/android:label="[^"]*"/android:label="宏曦聚合"/' android/app/src/main/AndroidManifest.xml
-          sed -i 's/applicationId "[^"]*"/applicationId "juhe.homes.app2026"/' android/app/build.gradle
-          sed -i 's/namespace "[^"]*"/namespace "juhe.homes.app2026"/' android/app/build.gradle
+          # Flutter 3.29 generates Kotlin DSL; the requested applicationId is
+          # already derived from --org/--project-name. Only set the display name.
 
       - name: Install dependencies
         run: flutter pub get
@@ -155,11 +155,19 @@ jobs:
           cache: true
 
       - name: Regenerate Windows project scaffolding
-        run: flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 .
+        run: |
+          Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
+          flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 .
 
       - name: Select Visual Studio 2022 generator
         shell: pwsh
-        run: Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+        run: |
+          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+          Get-ChildItem windows -Recurse -File | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            $text = $text -replace 'Visual Studio 16 2019', 'Visual Studio 17 2022'
+            Set-Content $_.FullName $text
+          }
 
       - name: Install dependencies
         run: flutter pub get
@@ -211,7 +219,7 @@ jobs:
         run: flutter pub get
 
       - name: Build macOS app
-        run: flutter build macos --release --no-codesign
+        run: flutter build macos --release
 
       - name: Package macOS app
         run: |
