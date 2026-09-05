@@ -35,8 +35,13 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete Android project scaffolding
-        run: flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate Android project scaffolding
+        run: |
+          rm -rf android
+          flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 .
+          sed -i 's/android:label="[^"]*"/android:label="宏曦聚合"/' android/app/src/main/AndroidManifest.xml
+          sed -i 's/applicationId "[^"]*"/applicationId "juhe.homes.app2026"/' android/app/build.gradle
+          sed -i 's/namespace "[^"]*"/namespace "juhe.homes.app2026"/' android/app/build.gradle
 
       - name: Install dependencies
         run: flutter pub get
@@ -56,7 +61,7 @@ jobs:
 
   ios:
     name: iOS Unsigned IPA
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -68,8 +73,10 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete iOS project scaffolding
-        run: flutter create --no-pub --platforms=ios --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate iOS project scaffolding
+        run: |
+          rm -rf ios
+          flutter create --no-pub --platforms=ios --org juhe.homes --project-name app2026 .
 
       - name: Set iOS display name
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" ios/Runner/Info.plist || true
@@ -108,8 +115,10 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete Web project scaffolding
-        run: flutter create --no-pub --platforms=web --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate Web project scaffolding
+        run: |
+          rm -rf web
+          flutter create --no-pub --platforms=web --org juhe.homes --project-name app2026 .
 
       - name: Install dependencies
         run: flutter pub get
@@ -133,7 +142,7 @@ jobs:
 
   windows:
     name: Windows Portable Package
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -145,15 +154,12 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete Windows project scaffolding
-        run: flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate Windows project scaffolding
+        run: flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 .
 
       - name: Select Visual Studio 2022 generator
         shell: pwsh
-        run: |
-          $cmake = Get-ChildItem -Path "$env:FLUTTER_ROOT" -Filter CMakeLists.txt -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (Test-Path windows/flutter/generated_plugins.cmake) { Write-Host 'Windows Flutter project ready' }
-          Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
+        run: Remove-Item -Recurse -Force build/windows -ErrorAction SilentlyContinue
 
       - name: Install dependencies
         run: flutter pub get
@@ -181,7 +187,7 @@ jobs:
 
   macos:
     name: macOS Portable App
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -193,8 +199,10 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete macOS project scaffolding
-        run: flutter create --no-pub --platforms=macos --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate macOS project scaffolding
+        run: |
+          rm -rf macos
+          flutter create --no-pub --platforms=macos --org juhe.homes --project-name app2026 .
 
       - name: Set macOS display name
         run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" macos/Runner/Configs/AppInfo.xcconfig || true
@@ -206,7 +214,10 @@ jobs:
         run: flutter build macos --release --no-codesign
 
       - name: Package macOS app
-        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/Runner.app hongxi-macos-app.zip
+        run: |
+          APP_PATH=$(find build/macos/Build/Products/Release -maxdepth 1 -name '*.app' -print -quit)
+          test -n "$APP_PATH"
+          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" hongxi-macos-app.zip
 
       - name: Upload macOS package
         uses: actions/upload-artifact@v4
@@ -234,8 +245,10 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Complete Linux project scaffolding
-        run: flutter create --no-pub --platforms=linux --org juhe.homes --project-name app2026 --overwrite .
+      - name: Regenerate Linux project scaffolding
+        run: |
+          rm -rf linux
+          flutter create --no-pub --platforms=linux --org juhe.homes --project-name app2026 .
 
       - name: Install dependencies
         run: flutter pub get
