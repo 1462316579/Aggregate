@@ -6,20 +6,24 @@ import '../models/video_source.dart';
 class AppConfig {
   static SharedPreferences? _prefs;
 
-  static const _defaultSources = [
-    VideoSource(key: 'heimuer', name: '黑木耳', api: 'https://json.heimuer.xyz/api.php/provide/vod/', type: 2),
-    VideoSource(key: 'ikun', name: 'ikun资源', api: 'https://ikunzyapi.com/api.php/provide/vod/', type: 2),
-    VideoSource(key: 'ffzy', name: '非凡资源', api: 'https://cj.ffzyapi.com/api.php/provide/vod/', type: 2),
-    VideoSource(key: 'hongniu', name: '红牛资源', api: 'https://www.hongniuzy2.com/api.php/provide/vod/', type: 2),
-  ];
+  static const List<VideoSource> _defaultSources = [];
 
   static Future<void> init() async { _prefs = await SharedPreferences.getInstance(); }
 
   static Future<List<VideoSource>> getSources() async {
     final s = _prefs?.getString('sources');
-    if (s != null) return (jsonDecode(s) as List).map((e) => VideoSource.fromJson(e)).toList();
-    await saveSources(_defaultSources);
-    return _defaultSources;
+    if (s != null) {
+      final sources = (jsonDecode(s) as List).map((e) => VideoSource.fromJson(e)).toList();
+      return sources;
+    }
+    final defaults = [
+      VideoSource(key: 'heimuer', name: '黑木耳', api: 'https://json.heimuer.xyz/api.php/provide/vod/', type: 2),
+      VideoSource(key: 'ikun', name: 'ikun资源', api: 'https://ikunzyapi.com/api.php/provide/vod/', type: 2),
+      VideoSource(key: 'ffzy', name: '非凡资源', api: 'https://cj.ffzyapi.com/api.php/provide/vod/', type: 2),
+      VideoSource(key: 'hongniu', name: '红牛资源', api: 'https://www.hongniuzy2.com/api.php/provide/vod/', type: 2),
+    ];
+    await saveSources(defaults);
+    return defaults;
   }
 
   static Future<void> saveSources(List<VideoSource> sources) async {

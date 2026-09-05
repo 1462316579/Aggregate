@@ -100,10 +100,10 @@ class _DetailScreenState extends State<DetailScreen> {
                           ),
                         );
                       },
-                      childCount: video.episodes!.length),
+                      childCount: video.episodes!.length,
                     ),
                   ),
-              ),
+                ),
               const SliverToBoxAdapter(child: SizedBox(height: 80)),
             ]),
       floatingActionButton: video.episodes != null && video.episodes!.isNotEmpty
