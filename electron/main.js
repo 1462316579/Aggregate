@@ -9,7 +9,7 @@ function createWindow() {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    title: '聚合影视',
+    title: '宏曦聚合',
     icon: path.join(__dirname, 'assets/icon.png'),
     webPreferences: {
       nodeIntegration: false,

@@ -12,7 +12,7 @@
   },
   "build": {
     "appId": "juhe.2026.homes",
-    "productName": "聚合影视",
+    "productName": "宏曦聚合",
     "directories": {
       "output": "dist"
     },

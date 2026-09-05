@@ -1,0 +1,64 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK (Release)
+        run: flutter build apk --release --split-per-abi
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: hongxi-apk-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: 宏曦聚合 v${{ github.run_number }}
+          body: |
+            🎬 宏曦聚合 v${{ github.run_number }}
+            
+            📱 Android APK 自动构建
+            
+            ### 下载
+            - `app-arm64-v8a-release.apk` → 64位手机 (推荐)
+            - `app-armeabi-v7a-release.apk` → 32位手机
+            - `app-x86_64-release.apk` → 模拟器
+            
+            ### 功能
+            - 视频/漫画/小说/音乐 全品类聚合
+            - 影视嗅探 + 多语言插件系统
+            - TV遥控器 + 移动端手势 + 桌面键盘
+            - WebDAV备份 + 聚合搜索
+          files: build/app/outputs/flutter-apk/*.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
