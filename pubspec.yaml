@@ -9,6 +9,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  provider: ^6.1.1
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  cached_network_image: ^3.3.0
+  collection: ^1.18.0
+  webview_flutter: ^4.4.0
+  flutter_js: ^0.8.0
 
 dev_dependencies:
   flutter_test:

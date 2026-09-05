@@ -1,45 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'providers/source_provider.dart';
+import 'screens/home/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: '宏曦聚合',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
-      home: const HomeScreen(),
-    );
-  }
-}
-
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('宏曦聚合')),
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.movie_filter, size: 64, color: Colors.blue),
-            SizedBox(height: 16),
-            Text('宏曦聚合', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('包名: juhe.homes.app2026'),
-            Text('全平台影视聚合播放器'),
-          ],
+    return ChangeNotifierProvider(
+      create: (_) => SourceProvider()..init(),
+      child: MaterialApp(
+        title: '宏曦聚合',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true, brightness: Brightness.light,
+          primaryColor: const Color(0xFF2196F3),
+          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white, elevation: 0, centerTitle: true,
+            iconTheme: IconThemeData(color: Color(0xFF333333)),
+            titleTextStyle: TextStyle(color: Color(0xFF333333), fontSize: 17, fontWeight: FontWeight.w600)),
         ),
+        home: const HomeScreen(),
       ),
     );
   }
