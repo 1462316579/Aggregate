@@ -146,8 +146,8 @@ class _MinePage extends StatelessWidget {
       Container(
         padding: const EdgeInsets.all(16), color: Colors.white,
         child: Row(children: [
-          CircleAvatar(radius: 32, backgroundColor: const Color(0xFF2196F3).withOpacity(0.1),
-            child: const Icon(Icons.person, color: Color(0xFF2196F3), size: 36)),
+          CircleAvatar(radius: 32, backgroundColor: const Color(0xFF2196F3),
+            child: const Icon(Icons.person, color: Colors.white, size: 36)),
           const SizedBox(width: 14),
           const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text('宏曦聚合', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold)),
