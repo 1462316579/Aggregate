@@ -1,5 +1,5 @@
-name: allplay
-description: AllPlay - 全平台影视聚合播放器
+name: hongxi
+description: 宏曦聚合 - 全平台影视聚合播放器
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -31,7 +31,6 @@ dependencies:
   # 解析与爬虫
   html: ^0.15.4
   xpath: ^1.4.0
-  flutter_js: ^0.8.2
   
   # WebView (影视嗅探)
   webview_flutter: ^4.7.0
