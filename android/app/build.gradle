@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace "com.allplay.app"
+    namespace "juhe.2026.homes"
     compileSdk 34
     ndkVersion flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.allplay.app"
+        applicationId "juhe.2026.homes"
         minSdk 21
         targetSdk 34
         versionCode 1

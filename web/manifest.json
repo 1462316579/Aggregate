@@ -1,6 +1,6 @@
 {
-  "name": "AllPlay",
-  "short_name": "AllPlay",
+  "name": "聚合影视",
+  "short_name": "聚合影视",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#0F0F0F",

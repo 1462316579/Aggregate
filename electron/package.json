@@ -1,7 +1,7 @@
 {
-  "name": "allplay-desktop",
+  "name": "juhe-2026-homes",
   "version": "1.0.0",
-  "description": "AllPlay - 全平台影视聚合播放器 (Desktop)",
+  "description": "聚合影视 - 全平台影视聚合播放器 (Desktop)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
@@ -11,8 +11,8 @@
     "build:linux": "electron-builder --linux"
   },
   "build": {
-    "appId": "com.allplay.app",
-    "productName": "AllPlay",
+    "appId": "juhe.2026.homes",
+    "productName": "聚合影视",
     "directories": {
       "output": "dist"
     },

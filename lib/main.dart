@@ -33,7 +33,7 @@ class AllPlayApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => MusicPlayerService()),
       ],
       child: MaterialApp(
-        title: 'AllPlay',
+        title: '聚合影视',
         debugShowCheckedModeBanner: false,
         // 亦搜风格 — 浅色主题
         theme: ThemeData(
