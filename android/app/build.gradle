@@ -22,11 +22,10 @@ if (flutterVersionName == null) {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 
 android {
-    namespace "juhe.2026.homes"
+    namespace "juhe.homes.app2026"
     compileSdk 34
 
     compileOptions {
@@ -34,16 +33,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
-    kotlinOptions {
-        jvmTarget = '1.8'
-    }
-
     sourceSets {
         main.java.srcDirs += 'src/main/kotlin'
     }
 
     defaultConfig {
-        applicationId "juhe.2026.homes"
+        applicationId "juhe.homes.app2026"
         minSdk 21
         targetSdk 34
         versionCode Integer.parseInt(flutterVersionCode)
@@ -66,7 +61,4 @@ android {
 
 flutter {
     source '../..'
-}
-
-dependencies {
 }
