@@ -14,6 +14,7 @@ import '../../utils/tv_remote_handler.dart';
 import '../../utils/keyboard_shortcuts.dart';
 import '../../utils/player_gesture_detector.dart';
 import '../../utils/skip_intro_outro.dart';
+import '../danmaku/danmaku_overlay.dart';
 
 class PlayerScreen extends StatefulWidget {
   final String title;
@@ -54,6 +55,17 @@ class _PlayerScreenState extends State<PlayerScreen> {
   Duration? _introEnd;
   Duration? _outroStart;
   bool _introSettingEnabled = true;
+
+  // 弹幕
+  bool _danmakuEnabled = false;
+  double _danmakuOpacity = 0.8;
+  double _danmakuFontSize = 16;
+  double _danmakuSpeed = 1.0;
+  List<DanmakuItem> _danmakuItems = [];
+
+  // 字幕
+  bool _subtitleEnabled = false;
+  List<SubtitleItem> _subtitles = [];
 
   @override
   void initState() {
@@ -236,6 +248,22 @@ class _PlayerScreenState extends State<PlayerScreen> {
             onSkipOutro: _playNextEpisode,
             onSeekTo: _seekTo,
           ),
+
+          // 弹幕层
+          DanmakuOverlay(
+            items: _danmakuItems,
+            enabled: _danmakuEnabled,
+            opacity: _danmakuOpacity,
+            fontSize: _danmakuFontSize,
+            speed: _danmakuSpeed,
+          ),
+
+          // 字幕层
+          if (_subtitleEnabled && _subtitles.isNotEmpty)
+            Positioned(
+              bottom: 100, left: 16, right: 16,
+              child: _buildSubtitleOverlay(),
+            ),
         ],
       ),
     );
@@ -285,6 +313,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
                 onPressed: _showCastSheet,
                 tooltip: '投屏',
               ),
+            // 弹幕按钮
+            GestureDetector(
+              onTap: () => setState(() => _danmakuEnabled = !_danmakuEnabled),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _danmakuEnabled ? const Color(0xFF2196F3).withOpacity(0.3) : Colors.white24,
+                  borderRadius: BorderRadius.circular(4)),
+                child: Text('弹幕', style: TextStyle(
+                    color: _danmakuEnabled ? Colors.blue : Colors.white, fontSize: 12)),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // 字幕按钮
+            GestureDetector(
+              onTap: () => setState(() => _subtitleEnabled = !_subtitleEnabled),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _subtitleEnabled ? const Color(0xFF2196F3).withOpacity(0.3) : Colors.white24,
+                  borderRadius: BorderRadius.circular(4)),
+                child: Text('字幕', style: TextStyle(
+                    color: _subtitleEnabled ? Colors.blue : Colors.white, fontSize: 12)),
+              ),
+            ),
+            const SizedBox(width: 8),
             // 倍速
             PopupMenuButton<double>(
               icon: Text('${_speed}x', style: const TextStyle(color: Colors.white, fontSize: 14)),
@@ -466,4 +520,32 @@ class _PlayerScreenState extends State<PlayerScreen> {
     if (h > 0) return '${h.toString().padLeft(2,'0')}:${m.toString().padLeft(2,'0')}:${s.toString().padLeft(2,'0')}';
     return '${m.toString().padLeft(2,'0')}:${s.toString().padLeft(2,'0')}';
   }
+
+  Widget _buildSubtitleOverlay() {
+    final currentSub = _subtitles.where((s) =>
+        _position >= s.start && _position <= s.end).toList();
+    if (currentSub.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: currentSub.map((s) => Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          borderRadius: BorderRadius.circular(6)),
+        child: Text(s.text,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white, fontSize: 16)),
+      )).toList(),
+    );
+  }
+}
+
+/// 字幕数据
+class SubtitleItem {
+  final Duration start;
+  final Duration end;
+  final String text;
+  SubtitleItem({required this.start, required this.end, required this.text});
 }

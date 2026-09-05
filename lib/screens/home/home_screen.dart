@@ -14,6 +14,8 @@ import '../../screens/comic/comic_detail_screen.dart';
 import '../../screens/novel/novel_detail_screen.dart';
 import '../../screens/music/music_player_screen.dart';
 import '../../screens/music/music_detail_screen.dart';
+import '../../screens/library/library_screen.dart';
+import '../../screens/updates/updates_screen.dart';
 import 'pages/comic_page.dart';
 import 'pages/novel_page.dart';
 import 'pages/music_page.dart';
@@ -29,13 +31,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentTab = 0;
 
-  final _tabs = const ['精选', '漫画', '小说', '音乐', '直播'];
+  final _tabs = const ['精选', '漫画', '小说', '音乐', '直播', '书架', '更新'];
   final _icons = const [
     Icons.home_rounded,
     Icons.auto_stories_rounded,
     Icons.menu_book_rounded,
     Icons.music_note_rounded,
     Icons.live_tv_rounded,
+    Icons.library_books_rounded,
+    Icons.update_rounded,
   ];
 
   @override
@@ -59,6 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 const NovelPage(),
                 const MusicPage(),
                 const LivePage(),
+                const LibraryScreen(),
+                const UpdatesScreen(),
               ],
             ),
           ),
