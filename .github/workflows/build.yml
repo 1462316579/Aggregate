@@ -22,20 +22,20 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.22.0'
           channel: 'stable'
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build APK (Release)
-        run: flutter build apk --release --split-per-abi
+        run: flutter build apk --release
 
       - name: Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
           name: hongxi-apk-${{ github.sha }}
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 30
 
       - name: Create Release
@@ -48,17 +48,6 @@ jobs:
             🎬 宏曦聚合 v${{ github.run_number }}
             
             📱 Android APK 自动构建
-            
-            ### 下载
-            - `app-arm64-v8a-release.apk` → 64位手机 (推荐)
-            - `app-armeabi-v7a-release.apk` → 32位手机
-            - `app-x86_64-release.apk` → 模拟器
-            
-            ### 功能
-            - 视频/漫画/小说/音乐 全品类聚合
-            - 影视嗅探 + 多语言插件系统
-            - TV遥控器 + 移动端手势 + 桌面键盘
-            - WebDAV备份 + 聚合搜索
-          files: build/app/outputs/flutter-apk/*.apk
+          files: build/app/outputs/flutter-apk/app-release.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
