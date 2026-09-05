@@ -106,4 +106,15 @@ class UnifiedContent {
       sourceKey: sourceKey ?? this.sourceKey, mediaType: mediaType,
       status: status, year: year, extra: extra,
     );
+
+  /// 转换为 VideoContent (用于播放器兼容)
+  dynamic toVideoContent() {
+    return {
+      'vod_id': id, 'vod_name': title, 'vod_pic': cover,
+      'vod_content': description, 'type_name': category,
+      'vod_year': year, 'vod_area': '', 'vod_director': author,
+      'vod_actor': '', 'vod_remarks': status,
+      'sourceKey': sourceKey,
+    };
+  }
 }
