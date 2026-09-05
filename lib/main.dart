@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:media_kit/media_kit.dart';
 import 'providers/source_provider.dart';
 import 'providers/player_provider.dart';
 import 'services/app_config.dart';
-import 'services/music_player_service.dart';
 import 'screens/home/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -30,7 +27,6 @@ class AllPlayApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => SourceProvider()..init()),
         ChangeNotifierProvider(create: (_) => PlayerProvider()),
-        ChangeNotifierProvider(create: (_) => MusicPlayerService()),
       ],
       child: MaterialApp(
         title: '宏曦聚合',

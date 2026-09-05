@@ -375,12 +375,12 @@ class __HomePageState extends State<_HomePage> {
   }
 
   /// ═══ 通用横向滚动卡片 ═══
-  Widget _buildHorizontalRow<T>(
-    String title, List<T> items,
-    Function(T) onTap,
-    String Function(T) nameGetter,
-    String Function(T) coverGetter,
-    {String Function(T)? remark},
+  Widget _buildHorizontalRow(
+    String title, List items,
+    Function onTap,
+    Function nameGetter,
+    Function coverGetter,
+    {Function? remark},
   ) {
     if (items.isEmpty) return const SizedBox.shrink();
     return Column(
