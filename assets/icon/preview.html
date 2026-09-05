@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AllPlay APP Icon 预览</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  background: #1a1a2e; 
+  color: white; 
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+  display: flex; 
+  flex-direction: column;
+  align-items: center; 
+  padding: 40px 20px; 
+  min-height: 100vh;
+}
+h1 { margin-bottom: 8px; font-size: 28px; }
+.subtitle { color: #888; margin-bottom: 40px; font-size: 14px; }
+
+.icon-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+  justify-content: center;
+  max-width: 1000px;
+}
+
+.icon-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon-wrapper {
+  border-radius: 22%;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  position: relative;
+}
+
+.icon-wrapper.round { border-radius: 50%; }
+.icon-wrapper.squircle { border-radius: 22%; }
+
+.icon-label {
+  font-size: 12px;
+  color: #aaa;
+  text-align: center;
+}
+
+.icon-label strong {
+  display: block;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+/* 主图标 Canvas */
+.icon-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.section-title {
+  width: 100%;
+  max-width: 1000px;
+  margin: 40px 0 20px;
+  font-size: 20px;
+  color: #1E88E5;
+  border-bottom: 1px solid #333;
+  padding-bottom: 8px;
+}
+
+/* 平台预览 */
+.platform-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  margin: 30px 0;
+}
+
+.phone-frame {
+  width: 280px;
+  height: 500px;
+  background: #000;
+  border-radius: 36px;
+  border: 3px solid #333;
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+.phone-notch {
+  width: 120px;
+  height: 24px;
+  background: #000;
+  border-radius: 0 0 16px 16px;
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+}
+
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  background: #0F0F0F;
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-statusbar {
+  height: 44px;
+  background: #1A1A1A;
+}
+
+.phone-appbar {
+  height: 56px;
+  background: #1A1A1A;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+.phone-appbar canvas {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+}
+
+.phone-appbar span {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.phone-content {
+  flex: 1;
+  background: #0F0F0F;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px;
+}
+
+.phone-card {
+  aspect-ratio: 0.65;
+  background: #1E1E1E;
+  border-radius: 8px;
+}
+
+/* TV 预览 */
+.tv-frame {
+  width: 480px;
+  height: 300px;
+  background: #111;
+  border-radius: 16px;
+  border: 4px solid #333;
+  padding: 16px;
+  position: relative;
+}
+
+.tv-stand {
+  width: 80px;
+  height: 20px;
+  background: #333;
+  margin: 8px auto 0;
+  border-radius: 0 0 4px 4px;
+}
+</style>
+</head>
+<body>
+
+<h1>🎬 AllPlay APP Icon</h1>
+<p class="subtitle">全平台影视聚合播放器 — 图标预览</p>
+
+<!-- ═══ 主图标展示 ═══ -->
+<div class="icon-grid">
+
+  <!-- 1024 大图 -->
+  <div class="icon-card">
+    <div class="icon-wrapper squircle" style="width:256px;height:256px;">
+      <canvas id="icon-main" class="icon-canvas" width="256" height="256"></canvas>
+    </div>
+    <div class="icon-label">
+      <strong>主图标 (1024×1024)</strong>
+      渐变蓝底 + 播放三角 + 胶片装饰
+    </div>
+  </div>
+
+  <!-- 圆形变体 -->
+  <div class="icon-card">
+    <div class="icon-wrapper round" style="width:200px;height:200px;">
+      <canvas id="icon-round" class="icon-canvas" width="200" height="200"></canvas>
+    </div>
+    <div class="icon-label">
+      <strong>圆形 (Android Round)</strong>
+      适配圆形图标设备
+    </div>
+  </div>
+
+  <!-- 小尺寸 -->
+  <div class="icon-card">
+    <div class="icon-wrapper squircle" style="width:96px;height:96px;">
+      <canvas id="icon-sm" class="icon-canvas" width="96" height="96"></canvas>
+    </div>
+    <div class="icon-label">
+      <strong>96×96 (xhdpi)</strong>
+      Android 通知栏
+    </div>
+  </div>
+
+  <div class="icon-card">
+    <div class="icon-wrapper squircle" style="width:48px;height:48px;">
+      <canvas id="icon-xs" class="icon-canvas" width="48" height="48"></canvas>
+    </div>
+    <div class="icon-label">
+      <strong>48×48 (mdpi)</strong>
+      最小尺寸
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ 手机内预览 ═══ -->
+<div class="section-title">📱 手机桌面预览</div>
+<div class="platform-row">
+  <div class="phone-frame">
+    <div class="phone-notch"></div>
+    <div class="phone-screen">
+      <div class="phone-statusbar"></div>
+      <div class="phone-appbar">
+        <canvas id="icon-appbar" width="32" height="32" style="border-radius:8px;"></canvas>
+        <span>AllPlay</span>
+      </div>
+      <div class="phone-content">
+        <div class="phone-card"></div>
+        <div class="phone-card"></div>
+        <div class="phone-card"></div>
+        <div class="phone-card"></div>
+        <div class="phone-card"></div>
+        <div class="phone-card"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TV 预览 -->
+  <div>
+    <div class="tv-frame">
+      <div style="display:flex;height:100%;">
+        <div style="width:80px;background:#1A1A1A;border-radius:8px;padding:8px;">
+          <div style="text-align:center;padding:8px 0;">
+            <canvas id="icon-tv" width="40" height="40" style="border-radius:10px;"></canvas>
+            <div style="font-size:10px;color:#1E88E5;margin-top:4px;">AllPlay</div>
+          </div>
+          <div style="font-size:11px;color:#888;padding:4px 6px;">精选</div>
+          <div style="font-size:11px;color:#fff;padding:4px 6px;background:#1E88E5;border-radius:4px;">漫画</div>
+          <div style="font-size:11px;color:#888;padding:4px 6px;">小说</div>
+          <div style="font-size:11px;color:#888;padding:4px 6px;">音乐</div>
+        </div>
+        <div style="flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:12px;">
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+          <div style="background:#1E1E1E;border-radius:8px;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="tv-stand"></div>
+  </div>
+</div>
+
+<!-- ═══ 尺寸参考 ═══ -->
+<div class="section-title">📐 输出尺寸</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;width:100%;max-width:1000px;">
+  <div style="background:#1E1E1E;padding:12px;border-radius:8px;">
+    <div style="color:#1E88E5;font-weight:bold;">Android</div>
+    <div style="font-size:12px;color:#888;margin-top:4px;">
+      mdpi: 48 · hdpi: 72 · xhdpi: 96<br>
+      xxhdpi: 144 · xxxhdpi: 192<br>
+      Play Store: 512
+    </div>
+  </div>
+  <div style="background:#1E1E1E;padding:12px;border-radius:8px;">
+    <div style="color:#1E88E5;font-weight:bold;">iOS</div>
+    <div style="font-size:12px;color:#888;margin-top:4px;">
+      20/29/40/60/76/83.5 pt<br>
+      @1x @2x @3x<br>
+      App Store: 1024
+    </div>
+  </div>
+  <div style="background:#1E1E1E;padding:12px;border-radius:8px;">
+    <div style="color:#1E88E5;font-weight:bold;">Web</div>
+    <div style="font-size:12px;color:#888;margin-top:4px;">
+      favicon.ico: 16/32/48<br>
+      PWA: 192 + 512<br>
+      maskable: 192 + 512
+    </div>
+  </div>
+  <div style="background:#1E1E1E;padding:12px;border-radius:8px;">
+    <div style="color:#1E88E5;font-weight:bold;">桌面</div>
+    <div style="font-size:12px;color:#888;margin-top:4px;">
+      Windows: 256 (ico)<br>
+      macOS: 1024 (icns)<br>
+      Linux: 512 (png)
+    </div>
+  </div>
+</div>
+
+<script>
+function drawAllPlayIcon(canvasId, size) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const s = size;
+
+  // 背景渐变 (圆角矩形)
+  const gradient = ctx.createLinearGradient(0, 0, s, s);
+  gradient.addColorStop(0, '#0D47A1');
+  gradient.addColorStop(0.5, '#1565C0');
+  gradient.addColorStop(1, '#1E88E5');
+
+  const r = s * 0.22;
+  ctx.beginPath();
+  ctx.moveTo(r, 0);
+  ctx.lineTo(s - r, 0);
+  ctx.arcTo(s, 0, s, r, r);
+  ctx.lineTo(s, s - r);
+  ctx.arcTo(s, s, s - r, s, r);
+  ctx.lineTo(r, s);
+  ctx.arcTo(0, s, 0, s - r, r);
+  ctx.lineTo(0, r);
+  ctx.arcTo(0, 0, r, 0, r);
+  ctx.closePath();
+  ctx.fillStyle = gradient;
+  ctx.fill();
+
+  // 胶片条 (顶部)
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  roundRect(ctx, s*0.08, s*0.06, s*0.84, s*0.10, s*0.02);
+  ctx.fill();
+  // 胶片条 (底部)
+  roundRect(ctx, s*0.08, s*0.84, s*0.84, s*0.10, s*0.02);
+  ctx.fill();
+
+  // 胶片孔
+  ctx.fillStyle = 'rgba(255,255,255,0.15)';
+  for (let i = 0; i < 6; i++) {
+    const x = s * 0.16 + i * s * 0.13;
+    roundRect(ctx, x - s*0.025, s*0.085, s*0.05, s*0.04, s*0.008);
+    ctx.fill();
+    roundRect(ctx, x - s*0.025, s*0.865, s*0.05, s*0.04, s*0.008);
+    ctx.fill();
+  }
+
+  // 播放按钮外圈
+  ctx.beginPath();
+  ctx.arc(s/2, s/2, s*0.33, 0, Math.PI*2);
+  const circleGrad = ctx.createRadialGradient(s/2, s/2, 0, s/2, s/2, s*0.33);
+  circleGrad.addColorStop(0, 'rgba(255,255,255,0.25)');
+  circleGrad.addColorStop(1, 'rgba(255,255,255,0.08)');
+  ctx.fillStyle = circleGrad;
+  ctx.fill();
+
+  // 外圈光晕
+  ctx.beginPath();
+  ctx.arc(s/2, s/2, s*0.37, 0, Math.PI*2);
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = s * 0.012;
+  ctx.stroke();
+
+  // 播放三角形 (阴影)
+  ctx.shadowColor = 'rgba(0,0,0,0.3)';
+  ctx.shadowBlur = s * 0.02;
+  ctx.beginPath();
+  const ts = s * 0.16;
+  ctx.moveTo(s/2 - ts*0.45, s/2 - ts*0.55);
+  ctx.lineTo(s/2 + ts*0.65, s/2);
+  ctx.lineTo(s/2 - ts*0.45, s/2 + ts*0.55);
+  ctx.closePath();
+  ctx.fillStyle = 'white';
+  ctx.fill();
+  ctx.shadowColor = 'transparent';
+
+  // "ALL" 文字
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  ctx.font = `900 ${s*0.085}px -apple-system, sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.fillText('ALL', s/2, s*0.72);
+
+  // 星星装饰
+  ctx.fillStyle = 'rgba(255,255,255,0.3)';
+  drawStar(ctx, s*0.18, s*0.35, s*0.015);
+  drawStar(ctx, s*0.82, s*0.30, s*0.012);
+  drawStar(ctx, s*0.15, s*0.68, s*0.01);
+  drawStar(ctx, s*0.85, s*0.72, s*0.014);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+  ctx.lineTo(x+r, y+h);
+  ctx.arcTo(x, y+h, x, y+h-r, r);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.closePath();
+}
+
+function drawStar(ctx, cx, cy, r) {
+  ctx.beginPath();
+  for (let i = 0; i < 5; i++) {
+    const angle = (i * 72 - 90) * Math.PI / 180;
+    const innerAngle = ((i * 72 + 36) - 90) * Math.PI / 180;
+    const ox = cx + Math.cos(angle) * r;
+    const oy = cy + Math.sin(angle) * r;
+    const ix = cx + Math.cos(innerAngle) * r * 0.4;
+    const iy = cy + Math.sin(innerAngle) * r * 0.4;
+    if (i === 0) ctx.moveTo(ox, oy);
+    else ctx.lineTo(ox, oy);
+    ctx.lineTo(ix, iy);
+  }
+  ctx.closePath();
+  ctx.fill();
+}
+
+// 绘制所有图标
+drawAllPlayIcon('icon-main', 256);
+drawAllPlayIcon('icon-round', 200);
+drawAllPlayIcon('icon-sm', 96);
+drawAllPlayIcon('icon-xs', 48);
+drawAllPlayIcon('icon-appbar', 32);
+drawAllPlayIcon('icon-tv', 40);
+</script>
+</body>
+</html>

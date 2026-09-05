@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base href="$FLUTTER_BASE_HREF">
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="AllPlay - 全平台影视聚合播放器">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="AllPlay">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AllPlay - 全平台影视聚合播放器</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/Icon-192.png">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <link rel="shortcut icon" href="icons/Icon-192.png">
+    <meta name="theme-color" content="#1E88E5">
+    <style>
+      /* 启动画面样式 */
+      body { background: #0F0F0F; margin: 0; }
+      .splash { 
+        display: flex; flex-direction: column;
+        justify-content: center; align-items: center;
+        height: 100vh; color: white; font-family: system-ui;
+      }
+      .splash-icon {
+        width: 120px; height: 120px; border-radius: 26%;
+        background: linear-gradient(135deg, #0D47A1, #1E88E5);
+        display: flex; justify-content: center; align-items: center;
+        box-shadow: 0 8px 32px rgba(30,136,229,0.3);
+        margin-bottom: 24px;
+      }
+      .splash-icon svg { width: 56px; height: 56px; fill: white; }
+      .splash-text { font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+    </style>
+    <style>
+        body { background: #0F0F0F; margin: 0; }
+        .loading { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            color: white;
+            font-family: system-ui;
+        }
+    </style>
+</head>
+<body>
+    <!-- 启动画面 (Flutter 加载前显示) -->
+    <div class="splash" id="splash">
+      <div class="splash-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+      </div>
+      <div class="splash-text">ALLPLAY</div>
+    </div>
+    <script src="flutter_bootstrap.js" async></script>
+    <script>
+      // Flutter 加载后隐藏启动画面
+      window.addEventListener('flutter-first-frame', function() {
+        var splash = document.getElementById('splash');
+        if (splash) splash.style.display = 'none';
+      });
+    </script>
+</body>
+</html>

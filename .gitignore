@@ -1,0 +1,43 @@
+# Flutter
+*.dart_tool/
+.packages
+.pub/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Android
+android/.gradle/
+android/app/build/
+android/local.properties
+*.jks
+
+# iOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+
+# macOS
+macos/Pods/
+macos/Flutter/ephemeral/
+
+# Web
+web/favicon.png
+
+# Electron
+electron/node_modules/
+electron/dist/
+
+# System
+.DS_Store
+Thumbs.db
+*.log
+
+# Minis sandbox
+.dart_tool/

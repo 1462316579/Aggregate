@@ -1,0 +1,43 @@
+## ═══════════════════════════════════════
+##  flutter_launcher_icons 配置
+##  运行: dart run flutter_launcher_icons
+## ═══════════════════════════════════════
+
+dev_dependencies:
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  web:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+    background_color: "#0D47A1"
+    theme_color: "#1E88E5"
+  windows:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+  macos:
+    generate: true
+    image_path: "assets/icon/app_icon.png"
+
+  image_path: "assets/icon/app_icon.png"
+
+  # Android 配置
+  android:
+    adaptive_icon_foreground: "assets/icon/app_icon_foreground.png"
+    adaptive_icon_background: "#0D47A1"
+    image_path: "assets/icon/app_icon.png"
+    image_path_android: "assets/icon/app_icon.png"
+    remove_alpha_ios: true
+    min_sdk_android: 21
+
+  # iOS 配置
+  ios:
+    image_path: "assets/icon/app_icon.png"
+    remove_alpha_ios: true
+
+  # 自定义图标配置 (如果使用自定义设计)
+  adaptive_icon_config:
+    foreground_image: "assets/icon/app_icon_foreground.png"
+    background_color: "#0D47A1"
