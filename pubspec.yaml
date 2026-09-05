@@ -9,15 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
-
-  provider: ^6.1.1
-  http: ^1.1.0
-  shared_preferences: ^2.2.2
-  path_provider: ^2.1.1
-  cached_network_image: ^3.3.0
-  collection: ^1.18.0
 
 dev_dependencies:
   flutter_test:
@@ -25,6 +16,3 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/
-    - assets/icon/
