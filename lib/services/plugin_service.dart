@@ -5,6 +5,29 @@ import '../models/plugin.dart';
 
 class PluginService {
   static const _key = 'source_plugins';
+  static const _repoKey = 'plugin_repositories';
+
+  static Future<List<String>> repositories() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getStringList(_repoKey) ?? <String>[];
+  }
+
+  static Future<void> saveRepositories(List<String> values) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(_repoKey, values);
+  }
+
+  static Future<void> addRepository(String url) async {
+    final values = await repositories();
+    if (!values.contains(url)) values.add(url);
+    await saveRepositories(values);
+  }
+
+  static Future<void> removeRepository(String url) async {
+    final values = await repositories();
+    values.remove(url);
+    await saveRepositories(values);
+  }
 
   static Future<List<SourcePlugin>> list() async {
     final prefs = await SharedPreferences.getInstance();
@@ -34,6 +57,31 @@ class PluginService {
     final response = await http.get(Uri.parse(url)).timeout(const Duration(seconds: 20));
     if (response.statusCode < 200 || response.statusCode >= 300) throw Exception('HTTP ${response.statusCode}');
     return response.body;
+  }
+
+  /// 仓库可返回插件数组，或 {plugins:[...] }。
+  static Future<List<SourcePlugin>> loadRepository(String url) async {
+    final body = await downloadCode(url);
+    final decoded = jsonDecode(body);
+    final raw = decoded is List ? decoded : (decoded is Map ? decoded['plugins'] : null);
+    if (raw is! List) return <SourcePlugin>[];
+    return raw.whereType<Map>().map((e) => SourcePlugin.fromMap(Map<String, dynamic>.from(e))).toList();
+  }
+
+  static Future<void> installFromRepository(String url) async {
+    final plugins = await loadRepository(url);
+    for (final plugin in plugins) {
+      await save(plugin);
+    }
+  }
+
+  static Future<String> runTest(SourcePlugin plugin) async {
+    if (plugin.code.trim().isEmpty) return '代码为空';
+    if (plugin.language != PluginLanguage.javascript) {
+      return '${plugin.language.name} 插件已保存；当前内置调试器支持 JavaScript，其他语言需对应运行时。';
+    }
+    if (!plugin.code.contains('function search')) return '未找到 search 函数';
+    return '插件结构检查通过';
   }
 
   static SourcePlugin get _defaultPlugin => SourcePlugin(

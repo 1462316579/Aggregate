@@ -49,4 +49,22 @@ class SourcePlugin {
   };
 
   String exportJson() => const JsonEncoder.withIndent('  ').convert(toMap());
+
+  SourcePlugin copyWith({
+    String? name,
+    String? version,
+    String? description,
+    PluginLanguage? language,
+    String? code,
+    bool? enabled,
+  }) => SourcePlugin(
+    id: id,
+    name: name ?? this.name,
+    version: version ?? this.version,
+    description: description ?? this.description,
+    language: language ?? this.language,
+    code: code ?? this.code,
+    enabled: enabled ?? this.enabled,
+    updatedAt: DateTime.now(),
+  );
 }

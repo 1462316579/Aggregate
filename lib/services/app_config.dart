@@ -38,6 +38,10 @@ class AppConfig {
     await _prefs?.setString('history', jsonEncode(list));
   }
 
+  static Future<void> clearHistory() async {
+    await _prefs?.remove('history');
+  }
+
   static Future<List<Map<String, dynamic>>> getFavorites() async {
     final raw = _prefs?.getString('favorites');
     if (raw == null) return [];
