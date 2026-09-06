@@ -1,13 +1,39 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/content.dart';
 
 class AppConfig {
   static SharedPreferences? _prefs;
+  static final ValueNotifier<String> themeNotifier = ValueNotifier<String>('system');
+  static final ValueNotifier<String> languageNotifier = ValueNotifier<String>('zh');
 
   static Future<void> init() async {
     _prefs = await SharedPreferences.getInstance();
+    themeNotifier.value = theme;
+    languageNotifier.value = language;
   }
+
+  static String get tmdbKey => _prefs?.getString('tmdb_key') ?? '';
+  static Future<void> setTmdbKey(String value) async => _prefs?.setString('tmdb_key', value);
+
+  static String get language => _prefs?.getString('language') ?? 'zh';
+  static Future<void> setLanguage(String value) async {
+    await _prefs?.setString('language', value);
+    languageNotifier.value = value;
+  }
+
+  static String get theme => _prefs?.getString('theme') ?? 'system';
+  static Future<void> setTheme(String value) async {
+    await _prefs?.setString('theme', value);
+    themeNotifier.value = value;
+  }
+
+  static bool get autoCheckUpdate => _prefs?.getBool('auto_check_update') ?? true;
+  static Future<void> setAutoCheckUpdate(bool value) async => _prefs?.setBool('auto_check_update', value);
+
+  static bool get nsfw => _prefs?.getBool('nsfw') ?? false;
+  static Future<void> setNsfw(bool value) async => _prefs?.setBool('nsfw', value);
 
   static Future<List<SourceDefinition>> getSources() async {
     final raw = _prefs?.getString('sources');

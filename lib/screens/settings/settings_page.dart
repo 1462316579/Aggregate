@@ -30,6 +30,17 @@ class _SettingsPageState extends State<SettingsPage> {
   String _proxy = '';
   String _userAgent = '';
   final List<String> _logs = <String>[];
+  String _tmdbKey = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _tmdbKey = AppConfig.tmdbKey;
+    _language = _languageLabel(AppConfig.language);
+    _theme = _themeLabel(AppConfig.theme);
+    _autoCheckUpdate = AppConfig.autoCheckUpdate;
+    _nsfw = AppConfig.nsfw;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +54,23 @@ class _SettingsPageState extends State<SettingsPage> {
             title: '常规',
             subtitle: 'TMDB、语言、主题和启动行为',
             children: <Widget>[
-              _inputTile('TMDB API Key', _maskedKey(), () => _textDialog('TMDB API Key', '输入 TMDB API Key', false)),
-              _radioTile('语言', _language, <String>['简体中文', '繁體中文', 'English'], (v) => setState(() => _language = v)),
-              _radioTile('主题', _theme, <String>['跟随系统', '浅色', '深色', '纯黑'], (v) => setState(() => _theme = v)),
-              _switchTile('启动时检查更新', '应用启动时检查新版本', _autoCheckUpdate, (v) => setState(() => _autoCheckUpdate = v)),
-              _switchTile('显示成人内容', '允许扩展返回成人内容', _nsfw, (v) => setState(() => _nsfw = v)),
+              _inputTile('TMDB API Key', _maskedKey(), () => _tmdbDialog(context)),
+              _radioTile('语言', _language, <String>['简体中文', '繁體中文', 'English'], (v) {
+                setState(() => _language = v);
+                AppConfig.setLanguage(_languageCode(v));
+              }),
+              _radioTile('主题', _theme, <String>['跟随系统', '浅色', '深色', '纯黑'], (v) {
+                setState(() => _theme = v);
+                AppConfig.setTheme(_themeCode(v));
+              }),
+              _switchTile('启动时检查更新', '应用启动时检查新版本', _autoCheckUpdate, (v) {
+                setState(() => _autoCheckUpdate = v);
+                AppConfig.setAutoCheckUpdate(v);
+              }),
+              _switchTile('显示成人内容', '允许扩展返回成人内容', _nsfw, (v) {
+                setState(() => _nsfw = v);
+                AppConfig.setNsfw(v);
+              }),
             ],
           ),
           _expandGroup(
@@ -169,7 +192,68 @@ class _SettingsPageState extends State<SettingsPage> {
     title: Text(title), subtitle: Text('$subtitle · 当前 $value 秒'), trailing: const Icon(Icons.chevron_right), onTap: onTap,
   );
 
-  String _maskedKey() => '未设置';
+  String _maskedKey() {
+    if (_tmdbKey.isEmpty) return '未设置';
+    return List<String>.filled(_tmdbKey.length.clamp(4, 24), '•').join();
+  }
+
+  String _languageCode(String value) {
+    switch (value) {
+      case '繁體中文': return 'zhHant';
+      case 'English': return 'en';
+      default: return 'zh';
+    }
+  }
+
+  String _languageLabel(String value) {
+    switch (value) {
+      case 'zhHant': return '繁體中文';
+      case 'en': return 'English';
+      default: return '简体中文';
+    }
+  }
+
+  String _themeCode(String value) {
+    switch (value) {
+      case '浅色': return 'light';
+      case '深色': return 'dark';
+      case '纯黑': return 'black';
+      default: return 'system';
+    }
+  }
+
+  String _themeLabel(String value) {
+    switch (value) {
+      case 'light': return '浅色';
+      case 'dark': return '深色';
+      case 'black': return '纯黑';
+      default: return '跟随系统';
+    }
+  }
+
+  void _tmdbDialog(BuildContext context) {
+    final controller = TextEditingController(text: _tmdbKey);
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('TMDB API Key'),
+        content: TextField(
+          controller: controller,
+          obscureText: true,
+          decoration: const InputDecoration(hintText: '输入 TMDB API Key'),
+        ),
+        actions: <Widget>[
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(onPressed: () async {
+            final value = controller.text.trim();
+            await AppConfig.setTmdbKey(value);
+            if (mounted) setState(() => _tmdbKey = value);
+            if (ctx.mounted) Navigator.pop(ctx);
+          }, child: const Text('保存')),
+        ],
+      ),
+    );
+  }
 
   void _radioDialog(String title, String current, List<String> values, ValueChanged<String> onChanged) {
     showDialog<void>(
