@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../models/content.dart';
-import '../services/app_config.dart';
+import 'package:hongxi/models/content.dart';
+import 'package:hongxi/services/app_config.dart';
 
 class PlayerPage extends StatefulWidget {
   final MediaItem item;
@@ -26,15 +26,15 @@ class _PlayerPageState extends State<PlayerPage> {
 
   Future<void> _open() async {
     try {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(widget.episode.url));
-      await controller.initialize();
-      await controller.play();
+      final value = VideoPlayerController.networkUrl(Uri.parse(widget.episode.url));
+      await value.initialize();
+      await value.play();
       if (!mounted) {
-        await controller.dispose();
+        await value.dispose();
         return;
       }
       setState(() {
-        _controller = controller;
+        _controller = value;
         _loading = false;
       });
     } catch (_) {
@@ -54,6 +54,27 @@ class _PlayerPageState extends State<PlayerPage> {
   @override
   Widget build(BuildContext context) {
     final controller = _controller;
+    Widget content;
+    if (_loading) {
+      content = const Center(child: CircularProgressIndicator(color: Colors.white));
+    } else if (_error != null) {
+      content = Center(child: Text(_error!, style: const TextStyle(color: Colors.white)));
+    } else if (controller == null) {
+      content = const SizedBox.shrink();
+    } else {
+      content = Center(
+        child: AspectRatio(
+          aspectRatio: controller.value.aspectRatio,
+          child: Stack(
+            children: [
+              VideoPlayer(controller),
+              _controls(controller),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -61,18 +82,7 @@ class _PlayerPageState extends State<PlayerPage> {
         foregroundColor: Colors.white,
         title: Text(widget.item.title),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator(color: Colors.white))
-          : _error != null
-              ? Center(child: Text(_error!, style: const TextStyle(color: Colors.white)))
-              : controller == null
-                  ? const SizedBox.shrink()
-                  : Center(child: AspectRatio(
-                      aspectRatio: controller.value.aspectRatio,
-                      child: Stack(children: [
-                        VideoPlayer(controller),
-                        _controls(controller),
-                      ])),
+      body: content,
     );
   }
 
@@ -90,29 +100,33 @@ class _PlayerPageState extends State<PlayerPage> {
             colors: [Colors.black87, Colors.transparent],
           ),
         ),
-        child: Column(children: [
-          VideoProgressIndicator(
-            controller,
-            allowScrubbing: true,
-            colors: const VideoProgressColors(playedColor: Colors.blue),
-          ),
-          Row(children: [
-            IconButton(
-              icon: Icon(controller.value.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
-              onPressed: () {
-                if (controller.value.isPlaying) {
-                  controller.pause();
-                } else {
-                  controller.play();
-                }
-                setState(() {});
-              },
+        child: Column(
+          children: [
+            VideoProgressIndicator(
+              controller,
+              allowScrubbing: true,
+              colors: const VideoProgressColors(playedColor: Colors.blue),
             ),
-            Text(_format(controller.value.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
-            const Text(' / ', style: TextStyle(color: Colors.white70, fontSize: 12)),
-            Text(_format(controller.value.duration), style: const TextStyle(color: Colors.white70, fontSize: 12)),
-          ]),
-        ]),
+            Row(
+              children: [
+                IconButton(
+                  icon: Icon(controller.value.isPlaying ? Icons.pause : Icons.play_arrow, color: Colors.white),
+                  onPressed: () {
+                    if (controller.value.isPlaying) {
+                      controller.pause();
+                    } else {
+                      controller.play();
+                    }
+                    setState(() {});
+                  },
+                ),
+                Text(_format(controller.value.position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                const Text(' / ', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text(_format(controller.value.duration), style: const TextStyle(color: Colors.white70, fontSize: 12)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

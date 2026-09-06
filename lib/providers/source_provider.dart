@@ -46,6 +46,16 @@ class SourceProvider extends ChangeNotifier {
     return service.categories(source);
   }
 
+  Future<String> chapterContent(String sourceId, String url) async {
+    final source = sourceFor(sourceId);
+    return source == null ? '' : service.chapterContent(source, url);
+  }
+
+  Future<List<String>> chapterImages(String sourceId, String url) async {
+    final source = sourceFor(sourceId);
+    return source == null ? [] : service.chapterImages(source, url);
+  }
+
   SourceDefinition? sourceFor(String id) {
     return _sources.where((source) => source.id == id).firstOrNull;
   }

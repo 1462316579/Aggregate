@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/content.dart';
+import 'package:hongxi/models/content.dart';
 import '../providers/source_provider.dart';
 import 'detail_page.dart';
 

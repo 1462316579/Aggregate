@@ -63,6 +63,33 @@ class SourceService {
     }
   }
 
+  Future<String> chapterContent(SourceDefinition source, String url) async {
+    try {
+      final response = await http.get(Uri.parse(url), headers: source.headers).timeout(const Duration(seconds: 15));
+      if (!_ok(response)) return '';
+      try {
+        final data = jsonDecode(response.body);
+        final value = data is Map ? (data['content'] ?? data['text'] ?? data['data'] ?? '') : data;
+        return '$value'.replaceAll(RegExp(r'<[^>]+>'), '\\n').trim();
+      } catch (_) {
+        return response.body.replaceAll(RegExp(r'<[^>]+>'), '\\n').trim();
+      }
+    } catch (_) {
+      return '';
+    }
+  }
+
+  Future<List<String>> chapterImages(SourceDefinition source, String url) async {
+    try {
+      final response = await http.get(Uri.parse(url), headers: source.headers).timeout(const Duration(seconds: 15));
+      if (!_ok(response)) return [];
+      final data = jsonDecode(response.body);
+      final raw = data is Map ? (data['images'] ?? data['pages'] ?? data['list'] ?? []) : data;
+      if (raw is List) return raw.map((item) => item is String ? item : '${item['url'] ?? item['src'] ?? ''}').where((item) => item.isNotEmpty).toList();
+    } catch (_) {}
+    return [];
+  }
+
   Future<String?> playUrl(SourceDefinition source, String url) async {
     if (source.ext == null || source.ext!.isEmpty) return url;
     try {
