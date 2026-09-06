@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'search_page.dart';
 
-/// Android home keeps the Miru-style discovery surface intentionally minimal:
-/// one search entry at the top, with content discovery handled by SearchPage.
+/// Android home intentionally contains only the global search entry.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('首页')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),

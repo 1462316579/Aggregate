@@ -71,15 +71,7 @@ jobs:
           else
             sed -i 's/applicationId "[^"]*"/applicationId "juhe.homes.app2026.tv"/' android/app/build.gradle
           fi
-          python3 - <<'PY'
-from pathlib import Path
-p = Path('android/app/src/main/AndroidManifest.xml')
-text = p.read_text()
-if 'android.software.leanback' not in text:
-    text = text.replace('<application', '<uses-feature android:name="android.software.leanback" android:required="true" />\n    <uses-feature android:name="android.hardware.touchscreen" android:required="false" />\n\n    <application', 1)
-text = text.replace('<category android:name="android.intent.category.LAUNCHER" />', '<category android:name="android.intent.category.LEANBACK_LAUNCHER" />', 1)
-p.write_text(text)
-PY
+          python3 -c "from pathlib import Path; p=Path('android/app/src/main/AndroidManifest.xml'); t=p.read_text(); t=t.replace('<application', '<uses-feature android:name=\"android.software.leanback\" android:required=\"true\" />\\n    <uses-feature android:name=\"android.hardware.touchscreen\" android:required=\"false\" />\\n\\n    <application', 1) if 'android.software.leanback' not in t else t; t=t.replace('<category android:name=\"android.intent.category.LAUNCHER\" />', '<category android:name=\"android.intent.category.LEANBACK_LAUNCHER\" />', 1); p.write_text(t)"
 
       # Keep the same debug signing scheme used by the previously published APK.
       # The build number must increase or Android rejects an equal-version update.
@@ -257,7 +249,7 @@ PY
             - `hongxi-source.tar.gz`：源代码
 
             应用名称：宏曦聚合
-            Android applicationId：`juhe.homes.app2026`
+            Android 手机 applicationId：`juhe.homes.app2026`\n            Android TV applicationId：`juhe.homes.app2026.tv`
           files: release-files/*
           fail_on_unmatched_files: true
         env:
