@@ -31,8 +31,15 @@ jobs:
           rm -rf android
           flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 .
           sed -i 's/android:label="[^"]*"/android:label="宏曦聚合"/' android/app/src/main/AndroidManifest.xml
-      - run: flutter pub get
-      - run: flutter build apk --release
+
+      # Keep the same debug signing scheme used by the previously published APK.
+      # The build number must increase or Android rejects an equal-version update.
+      - name: Build with increasing Android versionCode
+        run: |
+          flutter pub get
+          flutter build apk --release \
+            --build-name=1.0.${{ github.run_number }} \
+            --build-number=${{ github.run_number }}
       - run: cp build/app/outputs/flutter-apk/app-release.apk hongxi-android-universal.apk
       - uses: actions/upload-artifact@v4
         with:
