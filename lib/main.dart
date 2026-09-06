@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/source_provider.dart';
-import 'screens/home/home_screen.dart';
+import 'screens/main_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  runApp(const HongXiApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class HongXiApp extends StatelessWidget {
+  const HongXiApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
@@ -18,15 +19,17 @@ class MyApp extends StatelessWidget {
         title: '宏曦聚合',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          useMaterial3: true, brightness: Brightness.light,
-          primaryColor: const Color(0xFF2196F3),
-          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
-          appBarTheme: const AppBarTheme(
-            backgroundColor: Colors.white, elevation: 0, centerTitle: true,
-            iconTheme: IconThemeData(color: Color(0xFF333333)),
-            titleTextStyle: TextStyle(color: Color(0xFF333333), fontSize: 17, fontWeight: FontWeight.w600)),
+          useMaterial3: true,
+          colorSchemeSeed: const Color(0xff3f51b5),
+          scaffoldBackgroundColor: const Color(0xfff7f7f7),
+          appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
+          cardTheme: CardThemeData(
+            elevation: 1,
+            color: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
-        home: const HomeScreen(),
+        home: const MainPage(),
       ),
     );
   }

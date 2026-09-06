@@ -1,84 +1,86 @@
-/// 配置管理
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/video_source.dart';
+import '../models/content.dart';
 
 class AppConfig {
   static SharedPreferences? _prefs;
 
-  static const List<VideoSource> _defaultSources = [];
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+  }
 
-  static Future<void> init() async { _prefs = await SharedPreferences.getInstance(); }
-
-  static Future<List<VideoSource>> getSources() async {
-    final s = _prefs?.getString('sources');
-    if (s != null) {
-      final sources = (jsonDecode(s) as List).map((e) => VideoSource.fromJson(e)).toList();
-      return sources;
+  static Future<List<SourceDefinition>> getSources() async {
+    final raw = _prefs?.getString('sources');
+    if (raw == null || raw.isEmpty) return defaultSources;
+    try {
+      final list = jsonDecode(raw) as List;
+      return list.map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e))).toList();
+    } catch (_) {
+      return defaultSources;
     }
-    final defaults = [
-      VideoSource(key: 'heimuer', name: '黑木耳', api: 'https://json.heimuer.xyz/api.php/provide/vod/', type: 2),
-      VideoSource(key: 'ikun', name: 'ikun资源', api: 'https://ikunzyapi.com/api.php/provide/vod/', type: 2),
-      VideoSource(key: 'ffzy', name: '非凡资源', api: 'https://cj.ffzyapi.com/api.php/provide/vod/', type: 2),
-      VideoSource(key: 'hongniu', name: '红牛资源', api: 'https://www.hongniuzy2.com/api.php/provide/vod/', type: 2),
-    ];
-    await saveSources(defaults);
-    return defaults;
   }
 
-  static Future<void> saveSources(List<VideoSource> sources) async {
-    await _prefs?.setString('sources', jsonEncode(sources.map((s) => s.toJson()).toList()));
+  static Future<void> saveSources(List<SourceDefinition> sources) async {
+    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toMap()).toList()));
   }
-
-  static Future<String?> getActiveSourceKey() async => _prefs?.getString('activeSource');
-  static Future<void> setActiveSource(String key) async => await _prefs?.setString('activeSource', key);
 
   static Future<List<Map<String, dynamic>>> getHistory() async {
-    final s = _prefs?.getString('history');
-    return s != null ? List<Map<String, dynamic>>.from(jsonDecode(s)) : [];
+    final raw = _prefs?.getString('history');
+    if (raw == null) return [];
+    try { return List<Map<String, dynamic>>.from(jsonDecode(raw)); } catch (_) { return []; }
   }
 
-  static Future<void> addHistory(Map<String, dynamic> item) async {
-    final h = await getHistory();
-    h.removeWhere((e) => e['id'] == item['id']);
-    h.insert(0, item);
-    if (h.length > 100) h.removeRange(100, h.length);
-    await _prefs?.setString('history', jsonEncode(h));
+  static Future<void> addHistory(MediaItem item) async {
+    final list = await getHistory();
+    list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    list.insert(0, item.toMap());
+    if (list.length > 100) list.removeRange(100, list.length);
+    await _prefs?.setString('history', jsonEncode(list));
   }
 
   static Future<List<Map<String, dynamic>>> getFavorites() async {
-    final s = _prefs?.getString('favorites');
-    return s != null ? List<Map<String, dynamic>>.from(jsonDecode(s)) : [];
+    final raw = _prefs?.getString('favorites');
+    if (raw == null) return [];
+    try { return List<Map<String, dynamic>>.from(jsonDecode(raw)); } catch (_) { return []; }
   }
 
-  static Future<void> addFavorite(Map<String, dynamic> item) async {
-    final f = await getFavorites();
-    f.removeWhere((e) => e['id'] == item['id']);
-    f.insert(0, item);
-    await _prefs?.setString('favorites', jsonEncode(f));
+  static Future<void> toggleFavorite(MediaItem item) async {
+    final list = await getFavorites();
+    final exists = list.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    if (exists) {
+      list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    } else {
+      list.insert(0, item.toMap());
+    }
+    await _prefs?.setString('favorites', jsonEncode(list));
   }
 
-  static Future<void> removeFavorite(String id) async {
-    final f = await getFavorites();
-    f.removeWhere((e) => e['id'] == id);
-    await _prefs?.setString('favorites', jsonEncode(f));
-  }
-
-  static Future<bool> isFavorite(String id) async {
-    final f = await getFavorites();
-    return f.any((e) => e['id'] == id);
+  static Future<bool> isFavorite(MediaItem item) async {
+    final list = await getFavorites();
+    return list.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
   }
 
   static Future<List<String>> getSearchHistory() async {
-    final s = _prefs?.getString('searchHistory');
-    return s != null ? List<String>.from(jsonDecode(s)) : [];
+    final raw = _prefs?.getString('search_history');
+    if (raw == null) return [];
+    try { return List<String>.from(jsonDecode(raw)); } catch (_) { return []; }
   }
 
-  static Future<void> saveSearchHistory(String query) async {
-    final h = await getSearchHistory();
-    h.remove(query);
-    h.insert(0, query);
-    if (h.length > 20) h.removeRange(20, h.length);
-    await _prefs?.setString('searchHistory', jsonEncode(h));
+  static Future<void> addSearchHistory(String query) async {
+    final list = await getSearchHistory();
+    list.remove(query);
+    list.insert(0, query);
+    if (list.length > 30) list.removeRange(30, list.length);
+    await _prefs?.setString('search_history', jsonEncode(list));
   }
+
+  static Future<void> clearSearchHistory() async {
+    await _prefs?.remove('search_history');
+  }
+
+  static final defaultSources = <SourceDefinition>[
+    SourceDefinition(
+      id: 'demo-json', name: 'JSON 视频示例源',
+      api: 'https://example.com/api.php/provide/vod/', type: ContentType.video),
+  ];
 }

@@ -9,51 +9,32 @@ permissions:
   contents: write
 
 env:
-  FLUTTER_VERSION: 3.29.3
-  APP_NAME: hongxi
-  DISPLAY_NAME: 宏曦聚合
-  PACKAGE_NAME: juhe.homes.app2026
+  FLUTTER_VERSION: 3.35.5
 
 jobs:
   android:
     name: Android Universal APK
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
         with:
           distribution: zulu
           java-version: '17'
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate Android project scaffolding
+      - name: Generate Android host project
         run: |
           rm -rf android
           flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 .
           sed -i 's/android:label="[^"]*"/android:label="宏曦聚合"/' android/app/src/main/AndroidManifest.xml
-          # Flutter 3.29 generates Kotlin DSL; the requested applicationId is
-          # already derived from --org/--project-name. Only set the display name.
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build universal APK
-        run: flutter build apk --release
-
-      - name: Package APK
-        run: cp build/app/outputs/flutter-apk/app-release.apk hongxi-android-universal.apk
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - run: cp build/app/outputs/flutter-apk/app-release.apk hongxi-android-universal.apk
+      - uses: actions/upload-artifact@v4
         with:
           name: android
           path: hongxi-android-universal.apk
@@ -63,76 +44,53 @@ jobs:
     name: iOS Unsigned IPA
     runs-on: macos-14
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate iOS project scaffolding
+      - name: Generate iOS host project
         run: |
           rm -rf ios
           flutter create --no-pub --platforms=ios --org juhe.homes --project-name app2026 .
-
-      - name: Set iOS display name
-        run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" ios/Runner/Info.plist || true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build unsigned iOS app
-        run: flutter build ios --release --no-codesign
-
+      - name: Set display name
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName 宏曦聚合" ios/Runner/Info.plist
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
       - name: Package unsigned IPA
         run: |
           rm -rf Payload
           mkdir Payload
           cp -R build/ios/iphoneos/Runner.app Payload/Runner.app
           zip -qry hongxi-ios-unsigned.ipa Payload
-
-      - name: Upload iOS package
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: ios
           path: hongxi-ios-unsigned.ipa
           if-no-files-found: error
 
   web:
-    name: Web and Apple TV Web Package
+    name: Web and Apple TV Web
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate Web project scaffolding
+      - name: Generate Web host project
         run: |
           rm -rf web
           flutter create --no-pub --platforms=web --org juhe.homes --project-name app2026 .
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Web
-        run: flutter build web --release --base-href /
-
-      - name: Package Web and tvOS Web
+      - run: flutter pub get
+      - run: flutter build web --release --base-href /
+      - name: Package Web variants
         run: |
           tar -czf hongxi-web.tar.gz -C build/web .
           cp hongxi-web.tar.gz hongxi-tvos-web.tar.gz
-
-      - name: Upload Web packages
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: web
           path: |
@@ -141,24 +99,20 @@ jobs:
           if-no-files-found: error
 
   windows:
-    name: Windows Portable Package
+    name: Windows EXE Installer
     runs-on: windows-2022
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate Windows project scaffolding
+      - name: Generate Windows host project
+        shell: pwsh
         run: |
           Remove-Item -Recurse -Force windows -ErrorAction SilentlyContinue
           flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 .
-
       - name: Prepare Windows resources
         shell: pwsh
         run: |
@@ -166,114 +120,82 @@ jobs:
           $rc = 'windows/runner/Runner.rc'
           if (Test-Path $rc) {
             $text = Get-Content $rc -Raw
-            # The generated Flutter ICO is rejected by the Windows resource compiler.
             $text = $text -replace '(?m)^.*app_icon\.ico.*\r?\n', ''
             Set-Content $rc $text
           }
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Clean Windows build cache
-        shell: pwsh
-        run: if (Test-Path build/windows) { Remove-Item -Recurse -Force build/windows }
-
-      - name: Build Windows
+      - run: flutter pub get
+      - name: Build Windows executable
         env:
           CMAKE_GENERATOR: Visual Studio 17 2022
           CMAKE_GENERATOR_PLATFORM: x64
         run: flutter build windows --release
-
-      - name: Package Windows portable archive
+      - name: Build Windows installer EXE
         shell: pwsh
-        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath hongxi-windows-x64.zip -Force
-
-      - name: Upload Windows package
-        uses: actions/upload-artifact@v4
+        run: |
+          choco install innosetup --no-progress -y
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' packaging/windows-installer.iss
+          Copy-Item build/hongxi-windows-x64-setup.exe hongxi-windows-x64-setup.exe
+      - uses: actions/upload-artifact@v4
         with:
           name: windows
-          path: hongxi-windows-x64.zip
+          path: hongxi-windows-x64-setup.exe
           if-no-files-found: error
 
   macos:
-    name: macOS Portable App
+    name: macOS DMG Installer
     runs-on: macos-14
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate macOS project scaffolding
+      - name: Generate macOS host project
         run: |
           rm -rf macos
           flutter create --no-pub --platforms=macos --org juhe.homes --project-name app2026 .
-
-      - name: Set macOS display name
-        run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" macos/Runner/Configs/AppInfo.xcconfig || true
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build macOS app
-        run: flutter build macos --release
-
-      - name: Package macOS app
+      - name: Set display name
+        run: sed -i '' 's/PRODUCT_NAME = .*/PRODUCT_NAME = 宏曦聚合;/' macos/Runner/Configs/AppInfo.xcconfig || true
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: Build DMG installer
         run: |
           APP_PATH=$(find build/macos/Build/Products/Release -maxdepth 1 -name '*.app' -print -quit)
           test -n "$APP_PATH"
-          ditto -c -k --sequesterRsrc --keepParent "$APP_PATH" hongxi-macos-app.zip
-
-      - name: Upload macOS package
-        uses: actions/upload-artifact@v4
+          hdiutil create -volname "宏曦聚合" -srcfolder "$APP_PATH" -ov -format UDZO hongxi-macos-x64.dmg
+      - uses: actions/upload-artifact@v4
         with:
           name: macos
-          path: hongxi-macos-app.zip
+          path: hongxi-macos-x64.dmg
           if-no-files-found: error
 
   linux:
-    name: Linux Portable Package
+    name: Linux DEB Installer
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev fakeroot dpkg-dev
+      - uses: subosito/flutter-action@v2
         with:
           flutter-version: ${{ env.FLUTTER_VERSION }}
           channel: stable
           cache: true
-
-      - name: Regenerate Linux project scaffolding
+      - name: Generate Linux host project
         run: |
           rm -rf linux
           flutter create --no-pub --platforms=linux --org juhe.homes --project-name app2026 .
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build Linux
-        run: flutter build linux --release
-
-      - name: Package Linux bundle
-        run: tar -czf hongxi-linux-x64.tar.gz -C build/linux/x64/release/bundle .
-
-      - name: Upload Linux package
-        uses: actions/upload-artifact@v4
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Build DEB installer
+        run: bash packaging/linux-deb.sh
+      - uses: actions/upload-artifact@v4
         with:
           name: linux
-          path: hongxi-linux-x64.tar.gz
+          path: build/release/hongxi-linux-x64.deb
           if-no-files-found: error
 
   release:
@@ -281,51 +203,35 @@ jobs:
     needs: [android, ios, web, windows, macos, linux]
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Download all platform packages
-        uses: actions/download-artifact@v4
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
           path: release-files
           merge-multiple: true
-
       - name: Add source archive
         run: tar -czf release-files/hongxi-source.tar.gz --exclude=.git --exclude=build --exclude=release-files .
-
-      - name: List release files
-        run: ls -lah release-files
-
-      - name: Create GitHub Release
+      - name: Publish release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.0-build.${{ github.run_number }}
-          name: 宏曦聚合 v1.0.0 全平台版
+          name: 宏曦聚合 v1.0.0 全平台安装包
+          make_latest: true
           generate_release_notes: true
           body: |
-            # 宏曦聚合 v1.0.0 全平台版
+            # 宏曦聚合 v1.0.0
 
-            构建提交: `${{ github.sha }}`
+            - `hongxi-android-universal.apk`：Android/Android TV 通用安装包
+            - `hongxi-windows-x64-setup.exe`：Windows x64 安装程序
+            - `hongxi-macos-x64.dmg`：macOS 磁盘安装包
+            - `hongxi-linux-x64.deb`：Debian/Ubuntu 安装包
+            - `hongxi-ios-unsigned.ipa`：iOS 未签名包，需要 Apple 证书签名
+            - `hongxi-web.tar.gz`：Web 版
+            - `hongxi-tvos-web.tar.gz`：Apple TV Web 版
+            - `hongxi-source.tar.gz`：源代码
 
-            ## 下载说明
-
-            - `hongxi-android-universal.apk`：Android 手机、平板、Android TV 通用 APK
-            - `hongxi-ios-unsigned.ipa`：iOS 未签名包，需要使用 Apple 证书重新签名后安装
-            - `hongxi-tvos-web.tar.gz`：Apple TV 可通过浏览器使用的 tvOS Web 版
-            - `hongxi-windows-x64.zip`：Windows x64 免安装便携版
-            - `hongxi-macos-app.zip`：macOS App 便携包，首次运行可能需要允许未签名应用
-            - `hongxi-linux-x64.tar.gz`：Linux x64 便携包
-            - `hongxi-web.tar.gz`：Web 版，解压到任意静态网站服务器
-            - `hongxi-source.tar.gz`：源代码包
-
-            ## 应用信息
-
-            - 应用名称：宏曦聚合
-            - Android applicationId：`juhe.homes.app2026`
-            - Android TV：与 Android 通用 APK 共用
-            - Apple TV：当前提供 Web 运行包；原生 tvOS 需要单独 Apple Developer 签名工程
+            应用名称：宏曦聚合
+            Android applicationId：`juhe.homes.app2026`
           files: release-files/*
           fail_on_unmatched_files: true
-          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
