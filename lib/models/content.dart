@@ -55,7 +55,8 @@ class MediaItem {
       )).toList();
     }
     if (value is String && value.isNotEmpty) {
-      return value.split('###').expand((group) => group.split('#')).map((part) {
+      // TVBox uses $$$ between play lines; some extensions use ###.
+      return value.split(RegExp(r'\$\$\$|###')).expand((group) => group.split('#')).map((part) {
         final pieces = part.split(r'$');
         return MediaEpisode(
           id: pieces.length > 1 ? pieces[1].trim() : part.trim(),
