@@ -30,6 +30,10 @@ class ConfigTransferService {
       if (novels is List) {
         result.addAll(novels.whereType<Map>().map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e), forcedType: ContentType.novel)));
       }
+      final music = root['musicSites'];
+      if (music is List) {
+        result.addAll(music.whereType<Map>().map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e), forcedType: ContentType.music)));
+      }
       return result;
     }
     return [];

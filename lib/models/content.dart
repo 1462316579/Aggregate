@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-enum ContentType { video, comic, novel }
+enum ContentType { video, comic, novel, music }
 
 class MediaItem {
   final String id;
@@ -119,12 +119,14 @@ class SourceDefinition {
   });
 
   factory SourceDefinition.fromMap(Map<String, dynamic> json, {ContentType? forcedType}) {
-    final rawType = (json['mediaType'] ?? json['contentType'] ?? json['type_name'] ?? '').toString().toLowerCase();
+    final rawType = (json['mediaType'] ?? json['contentType'] ?? json['type_name'] ?? json['type'] ?? '').toString().toLowerCase();
     final type = forcedType ?? (rawType.contains('comic') || rawType.contains('漫画')
         ? ContentType.comic
         : rawType.contains('novel') || rawType.contains('小说')
             ? ContentType.novel
-            : ContentType.video);
+            : rawType.contains('music') || rawType.contains('音乐')
+                ? ContentType.music
+                : ContentType.video);
     return SourceDefinition(
       id: (json['key'] ?? json['id'] ?? json['name'] ?? '').toString(),
       name: (json['name'] ?? json['title'] ?? '').toString(),

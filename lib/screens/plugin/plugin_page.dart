@@ -201,12 +201,6 @@ class _PluginPageState extends State<PluginPage> with SingleTickerProviderStateM
             ),
           )),
         const SizedBox(height: 24),
-        const Text('仓库格式示例', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        SelectableText(
-          '{\n  "plugins": [\n    {\n      "id": "demo",\n      "name": "示例插件",\n      "language": "javascript",\n      "code": "..."\n    }\n  ]\n}',
-          style: TextStyle(fontFamily: 'monospace', color: Colors.grey[700]),
-        ),
       ],
     );
   }

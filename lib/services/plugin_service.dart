@@ -32,11 +32,11 @@ class PluginService {
   static Future<List<SourcePlugin>> list() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_key);
-    if (raw == null || raw.isEmpty) return [_defaultPlugin];
+    if (raw == null || raw.isEmpty) return <SourcePlugin>[];
     try {
       return (jsonDecode(raw) as List).map((item) => SourcePlugin.fromMap(Map<String, dynamic>.from(item))).toList();
     } catch (_) {
-      return [_defaultPlugin];
+      return <SourcePlugin>[];
     }
   }
 
@@ -84,16 +84,4 @@ class PluginService {
     return '插件结构检查通过';
   }
 
-  static SourcePlugin get _defaultPlugin => SourcePlugin(
-    id: 'example-json',
-    name: 'JSON 视频源示例',
-    description: 'Miru 风格本地扩展示例，返回统一 JSON。',
-    language: PluginLanguage.javascript,
-    code: '''// 宏曦聚合插件协议
-// search(keyword, page) 返回 {"list": [{"id":"", "title":"", "cover":""}]}
-async function search(keyword, page) {
-  return JSON.stringify({ list: [] });
-}
-''',
-  );
 }

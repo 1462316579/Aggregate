@@ -82,9 +82,6 @@ class AppConfig {
     await _prefs?.remove('search_history');
   }
 
-  static final defaultSources = <SourceDefinition>[
-    SourceDefinition(
-      id: 'demo-json', name: 'JSON 视频示例源',
-      api: 'https://example.com/api.php/provide/vod/', type: ContentType.video),
-  ];
+  /// 首次安装保持空白，不预置任何来源。
+  static const List<SourceDefinition> defaultSources = <SourceDefinition>[];
 }

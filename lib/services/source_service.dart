@@ -122,6 +122,7 @@ class SourceService {
     _addSourceGroup(root['videoSites'], result, ContentType.video);
     _addSourceGroup(root['comicSites'], result, ContentType.comic);
     _addSourceGroup(root['novelSites'], result, ContentType.novel);
+    _addSourceGroup(root['musicSites'], result, ContentType.music);
     return result;
   }
 
