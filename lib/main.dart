@@ -6,22 +6,31 @@ import 'services/app_config.dart';
 import 'services/app_services.dart';
 import 'services/music_player_service.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AppConfig.init();
-  await AppConfig.getSources();
+
+  // 配置读取失败也不能阻塞界面启动。
+  try {
+    await AppConfig.init().timeout(const Duration(seconds: 5));
+    await AppConfig.getSources().timeout(const Duration(seconds: 5));
+  } catch (_) {}
+
+  // BT/MCP 是可选的本地服务，放到 runApp 之后启动。
   final appServices = AppServices(sourceReader: () => AppConfig.cachedSources);
-  await appServices.startBuiltInServices();
   runApp(HongXiApp(appServices: appServices));
+
+  // 后台启动，异常不影响首页显示。
+  Future<void>(() async {
+    try {
+      await appServices.startBuiltInServices();
+    } catch (_) {}
+  });
 }
 
 class HongXiApp extends StatelessWidget {
   final AppServices appServices;
 
-  const HongXiApp({
-    super.key,
-    required this.appServices,
-  });
+  const HongXiApp({super.key, required this.appServices});
 
   @override
   Widget build(BuildContext context) {

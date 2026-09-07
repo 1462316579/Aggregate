@@ -21,8 +21,13 @@ class AppServices {
   }
 
   Future<void> startBuiltInServices() async {
-    await btServer.start();
-    await mcpServer.start();
+    // These are optional local integrations. Never let them block app startup.
+    try {
+      await btServer.start().timeout(const Duration(seconds: 3));
+    } catch (_) {}
+    try {
+      await mcpServer.start().timeout(const Duration(seconds: 3));
+    } catch (_) {}
   }
 
   Future<void> dispose() async {
