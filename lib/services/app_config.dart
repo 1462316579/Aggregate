@@ -5,6 +5,9 @@ import '../models/content.dart';
 
 class AppConfig {
   static SharedPreferences? _prefs;
+  static List<SourceDefinition> _sourcesCache = <SourceDefinition>[];
+
+  static List<SourceDefinition> get cachedSources => List.unmodifiable(_sourcesCache);
   static final ValueNotifier<String> themeNotifier = ValueNotifier<String>('system');
   static final ValueNotifier<String> languageNotifier = ValueNotifier<String>('zh');
 
@@ -37,16 +40,22 @@ class AppConfig {
 
   static Future<List<SourceDefinition>> getSources() async {
     final raw = _prefs?.getString('sources');
-    if (raw == null || raw.isEmpty) return defaultSources;
+    if (raw == null || raw.isEmpty) {
+      _sourcesCache = defaultSources;
+      return _sourcesCache;
+    }
     try {
       final list = jsonDecode(raw) as List;
-      return list.map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e))).toList();
+      _sourcesCache = list.map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e))).toList();
+      return _sourcesCache;
     } catch (_) {
-      return defaultSources;
+      _sourcesCache = defaultSources;
+      return _sourcesCache;
     }
   }
 
   static Future<void> saveSources(List<SourceDefinition> sources) async {
+    _sourcesCache = List<SourceDefinition>.from(sources);
     await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toMap()).toList()));
   }
 
