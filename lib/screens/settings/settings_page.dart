@@ -20,7 +20,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool _autoPlay = true;
   bool _rememberPosition = true;
   bool _hardwareDecode = true;
-  bool _tracking = false;
   bool _saveLog = false;
   String _language = '简体中文';
   String _theme = '跟随系统';
@@ -67,21 +66,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 setState(() => _autoCheckUpdate = v);
                 AppConfig.setAutoCheckUpdate(v);
               }),
-              _switchTile('显示成人内容', '允许扩展返回成人内容', _nsfw, (v) {
+              _switchTile('显示成人内容', '允许显示成人内容', _nsfw, (v) {
                 setState(() => _nsfw = v);
                 AppConfig.setNsfw(v);
               }),
-            ],
-          ),
-          _expandGroup(
-            icon: Icons.extension_outlined,
-            title: '扩展',
-            subtitle: '扩展仓库和本地插件',
-            children: <Widget>[
-              _inputTile('扩展仓库地址', '在插件页管理仓库', () => _toast('请到“插件”页的“扩展仓库”管理')),
-              _itemTile(Icons.extension, '已安装插件', '打开插件中心编辑、调试和删除插件', () => _toast('请点击底部“插件”页面')),
-              _itemTile(Icons.upload_file, '导入源配置', 'TVBox / HongXi JSON', _importSources),
-              _itemTile(Icons.download, '导出源配置', '复制当前源配置', _exportSources),
             ],
           ),
           _expandGroup(
@@ -98,22 +86,13 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           _expandGroup(
             icon: Icons.auto_stories_outlined,
-            title: '漫画阅读器',
-            subtitle: '阅读模式和图片显示',
+            title: '阅读器',
+            subtitle: '小说与漫画阅读设置',
             children: <Widget>[
-              _radioTile('默认阅读模式', _readerMode, <String>['标准', '从右到左', 'Webtoon'], (v) => setState(() => _readerMode = v)),
+              _radioTile('默认阅读模式', _readerMode, <String>['标准', '左右', '上下'], (v) => setState(() => _readerMode = v)),
               _switchTile('预加载下一页', '提前加载下一张图片', true, (_) {}),
               _radioTile('图片适应', '宽度', <String>['宽度', '高度', '原图'], (_) {}),
               _radioTile('音量键翻页', '启用', <String>['启用', '禁用'], (_) {}),
-            ],
-          ),
-          _expandGroup(
-            icon: Icons.sync,
-            title: '追踪',
-            subtitle: 'AniList 等第三方进度同步',
-            children: <Widget>[
-              _switchTile('自动追踪', '自动同步观看和阅读进度', _tracking, (v) => setState(() => _tracking = v)),
-              _itemTile(Icons.account_circle_outlined, 'AniList', '账号和同步设置', () => _toast('AniList 配置入口')),
             ],
           ),
           _expandGroup(
@@ -129,11 +108,10 @@ class _SettingsPageState extends State<SettingsPage> {
           _expandGroup(
             icon: Icons.article_outlined,
             title: '日志',
-            subtitle: '调试日志和扩展日志',
+            subtitle: '调试日志',
             children: <Widget>[
               _switchTile('保存日志', '保存应用运行日志', _saveLog, (v) => setState(() => _saveLog = v)),
               _itemTile(Icons.ios_share, '导出日志', '${_logs.length} 条日志', () => _toast('日志导出入口')),
-              _switchTile('扩展日志', '显示扩展执行日志', true, (_) {}),
               _itemTile(Icons.delete_sweep_outlined, '清除日志', '删除本地日志', () { setState(() => _logs.clear()); _toast('日志已清除'); }),
             ],
           ),
@@ -144,9 +122,6 @@ class _SettingsPageState extends State<SettingsPage> {
             initiallyExpanded: true,
             children: <Widget>[
               _itemTile(Icons.system_update, '检查更新', '当前版本 v1.0.0', () => _toast('当前已是最新版本')),
-              const ListTile(title: Text('宏曦聚合'), subtitle: Text('Miru 风格多媒体聚合应用')),
-              const ListTile(title: Text('包名'), subtitle: Text('juhe.homes.app2026')),
-              const ListTile(title: Text('许可'), subtitle: Text('开源项目，遵循仓库许可证')),
             ],
           ),
           const SizedBox(height: 24),
