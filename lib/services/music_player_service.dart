@@ -18,6 +18,7 @@ class MusicPlayerService extends ChangeNotifier {
   RepeatMode _repeatMode = RepeatMode.all;
   int _lyricIndex = -1;
   String? _error;
+  SourceDefinition? _source;
 
   MusicPlayerService() {
     _player.onPlayerStateChanged.listen((value) {
@@ -64,8 +65,10 @@ class MusicPlayerService extends ChangeNotifier {
   Future<void> playCurrent({SourceDefinition? source}) async {
     if (_index < 0 || _index >= _queue.length) return;
     final item = _queue[_index];
+    _source = source ?? _source;
     _current = item;
     _error = null;
+    if (source != null) _source = source;
     _lyrics
       ..clear()
       ..addAll(LyricLine.parse(item.lyrics ?? ''));
@@ -73,7 +76,7 @@ class MusicPlayerService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final url = await _sourceService.resolveMusicUrl(source, item);
+      final url = await _sourceService.resolveMusicUrl(_source, item);
       if (url == null || url.isEmpty) {
         throw StateError('当前歌曲没有可播放地址');
       }
