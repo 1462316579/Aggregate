@@ -7,12 +7,10 @@ class SourceService {
 
   Future<SearchResult> search(SourceDefinition source, String query) async {
     try {
-      final uri = _buildUri(source.search ?? source.api, {
-        'ac': 'detail',
-        'wd': query,
-        'pg': '1',
-        'page': '1',
-      });
+      final params = source.type == ContentType.music
+          ? <String, String>{'type': 'search', 'keywords': query, 'key': query, 'page': '1'}
+          : <String, String>{'ac': 'detail', 'wd': query, 'pg': '1', 'page': '1'};
+      final uri = _buildUri(source.search ?? source.api, params);
       final response = await http.get(uri, headers: source.headers).timeout(const Duration(seconds: 15));
       if (!_ok(response)) return SearchResult(query: query, items: [], errors: {source.id: 'HTTP ${response.statusCode}'});
       return SearchResult(query: query, items: _parseItems(response.body, source), errors: const {});
@@ -90,6 +88,27 @@ class SourceService {
     return [];
   }
 
+  /// Resolve a music URL. Supports direct URLs and common API response keys.
+  Future<String?> resolveMusicUrl(SourceDefinition? source, MediaItem item) async {
+    if (item.playUrl != null && item.playUrl!.isNotEmpty && _looksLikeUrl(item.playUrl!)) {
+      return item.playUrl;
+    }
+    if (source == null || source.api.isEmpty) return item.playUrl;
+    try {
+      final uri = _buildUri(source.api, {
+        'type': 'url',
+        'id': item.id,
+        'song_id': item.id,
+      });
+      final response = await http.get(uri, headers: source.headers).timeout(const Duration(seconds: 15));
+      if (!_ok(response)) return item.playUrl;
+      final root = jsonDecode(response.body);
+      return _findString(root, const ['url', 'playUrl', 'play_url', 'audio', 'audio_url', 'data']) ?? item.playUrl;
+    } catch (_) {
+      return item.playUrl;
+    }
+  }
+
   Future<String?> playUrl(SourceDefinition source, String url) async {
     if (source.ext == null || source.ext!.isEmpty) return url;
     try {
@@ -136,9 +155,7 @@ class SourceService {
   List<MediaItem> _parseItems(String body, SourceDefinition source) {
     try {
       final root = jsonDecode(body);
-      final raw = root is Map
-          ? (root['list'] ?? root['data'] ?? root['results'] ?? root['items'])
-          : root;
+      final raw = _extractItems(root, source.type);
       if (raw is List) {
         return raw.whereType<Map>().map((e) => MediaItem.fromMap(
           Map<String, dynamic>.from(e), source.id, source.type,
@@ -146,6 +163,23 @@ class SourceService {
       }
     } catch (_) {}
     return [];
+  }
+
+  dynamic _extractItems(dynamic root, ContentType type) {
+    if (root is List) return root;
+    if (root is! Map) return const <dynamic>[];
+    final keys = type == ContentType.music
+        ? const ['songs', 'song', 'tracks', 'result', 'data', 'list', 'items']
+        : const ['list', 'data', 'results', 'items'];
+    for (final key in keys) {
+      final value = root[key];
+      if (value is List) return value;
+      if (value is Map) {
+        final nested = _extractItems(value, type);
+        if (nested is List && nested.isNotEmpty) return nested;
+      }
+    }
+    return const <dynamic>[];
   }
 
   List<SourceCategory> _parseCategories(String body) {
@@ -166,6 +200,31 @@ class SourceService {
     final uri = Uri.parse(base);
     final merged = Map<String, String>.from(uri.queryParameters)..addAll(params);
     return uri.replace(queryParameters: merged);
+  }
+
+  String? _findString(dynamic value, List<String> keys) {
+    if (value is String && _looksLikeUrl(value)) return value;
+    if (value is Map) {
+      for (final key in keys) {
+        final candidate = value[key];
+        if (candidate is String && _looksLikeUrl(candidate)) return candidate;
+      }
+      for (final child in value.values) {
+        final found = _findString(child, keys);
+        if (found != null) return found;
+      }
+    }
+    if (value is List) {
+      for (final child in value) {
+        final found = _findString(child, keys);
+        if (found != null) return found;
+      }
+    }
+    return null;
+  }
+
+  bool _looksLikeUrl(String value) {
+    return value.startsWith('http://') || value.startsWith('https://');
   }
 
   bool _ok(http.Response response) => response.statusCode >= 200 && response.statusCode < 300;

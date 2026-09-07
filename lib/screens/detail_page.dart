@@ -5,6 +5,7 @@ import 'package:hongxi/providers/source_provider.dart';
 import 'package:hongxi/services/app_config.dart';
 import 'player_page.dart';
 import 'reader_page.dart';
+import 'music_player_page.dart';
 
 class DetailPage extends StatefulWidget {
   final MediaItem item;
@@ -76,27 +77,30 @@ class _DetailPageState extends State<DetailPage> {
               Text(_item.description.isEmpty ? '暂无简介' : _item.description, style: TextStyle(color: Colors.grey[600], height: 1.6)),
               if (_item.author != null) Padding(padding: const EdgeInsets.only(top: 10), child: Text('作者/演员：${_item.author}', style: TextStyle(color: Colors.grey[600], fontSize: 13))),
               const SizedBox(height: 22),
-              Text(_item.type == ContentType.video ? '剧集 (${_item.episodes.length})' : '章节 (${_item.episodes.length})', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text(_item.type == ContentType.video ? '剧集 (${_item.episodes.length})' : _item.type == ContentType.music ? '歌曲' : '章节 (${_item.episodes.length})', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 10),
             ]),
           )),
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverGrid(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, childAspectRatio: 2.2, crossAxisSpacing: 8, mainAxisSpacing: 8),
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final ep = _item.episodes[index];
-                return OutlinedButton(
-                  onPressed: () => _openEpisode(index),
-                  child: Text(ep.title.isEmpty ? '第 ${index + 1} 集' : ep.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                );
-              }, childCount: _item.episodes.length),
+          if (_item.type != ContentType.music)
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 4, childAspectRatio: 2.2, crossAxisSpacing: 8, mainAxisSpacing: 8),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final ep = _item.episodes[index];
+                  return OutlinedButton(
+                    onPressed: () => _openEpisode(index),
+                    child: Text(ep.title.isEmpty ? '第 ${index + 1} 集' : ep.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  );
+                }, childCount: _item.episodes.length),
+              ),
             ),
-          ),
           const SliverToBoxAdapter(child: SizedBox(height: 100)),
         ],
       ),
-      floatingActionButton: _item.episodes.isEmpty ? null : FloatingActionButton.extended(onPressed: () => _openEpisode(0), icon: Icon(_item.type == ContentType.video ? Icons.play_arrow : Icons.menu_book), label: Text(_item.type == ContentType.video ? '立即播放' : '开始阅读')),
+      floatingActionButton: _item.type == ContentType.music
+          ? FloatingActionButton.extended(onPressed: () => _openEpisode(0), icon: const Icon(Icons.music_note), label: const Text('播放音乐'))
+          : _item.episodes.isEmpty ? null : FloatingActionButton.extended(onPressed: () => _openEpisode(0), icon: Icon(_item.type == ContentType.video ? Icons.play_arrow : Icons.menu_book), label: Text(_item.type == ContentType.video ? '立即播放' : '开始阅读')),
     );
   }
 
@@ -107,6 +111,9 @@ class _DetailPageState extends State<DetailPage> {
   void _openEpisode(int index) {
     if (_item.type == ContentType.video) {
       Navigator.push(context, MaterialPageRoute(builder: (_) => PlayerPage(item: _item, episode: _item.episodes[index])));
+    } else if (_item.type == ContentType.music) {
+      final source = context.read<SourceProvider>().sourceFor(_item.sourceId);
+      Navigator.push(context, MaterialPageRoute(builder: (_) => MusicPlayerPage(item: _item, source: source)));
     } else {
       Navigator.push(context, MaterialPageRoute(builder: (_) => ReaderPage(item: _item, initialIndex: index)));
     }

@@ -3,22 +3,36 @@ import 'package:provider/provider.dart';
 import 'providers/source_provider.dart';
 import 'screens/main_page.dart';
 import 'services/app_config.dart';
+import 'services/app_services.dart';
+import 'services/music_player_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppConfig.init();
-  runApp(const HongXiApp());
+  await AppConfig.getSources();
+  final appServices = AppServices(sourceReader: () => AppConfig.cachedSources);
+  await appServices.startBuiltInServices();
+  runApp(HongXiApp(appServices: appServices));
 }
 
 class HongXiApp extends StatelessWidget {
-  const HongXiApp({super.key});
+  final AppServices appServices;
+
+  const HongXiApp({
+    super.key,
+    required this.appServices,
+  });
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<String>(
       valueListenable: AppConfig.themeNotifier,
-      builder: (context, theme, _) => ChangeNotifierProvider(
-        create: (_) => SourceProvider()..init(),
+      builder: (context, theme, _) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider<SourceProvider>(create: (_) => SourceProvider()..init()),
+          ChangeNotifierProvider<MusicPlayerService>(create: (_) => MusicPlayerService()),
+          Provider<AppServices>.value(value: appServices),
+        ],
         child: MaterialApp(
           title: '宏曦聚合',
           debugShowCheckedModeBanner: false,

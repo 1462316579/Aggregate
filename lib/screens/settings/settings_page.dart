@@ -89,7 +89,6 @@ class _SettingsPageState extends State<SettingsPage> {
             title: '视频播放器',
             subtitle: '播放引擎、外部播放器和快捷键',
             children: <Widget>[
-              _itemTile(Icons.cloud_queue, 'BT 服务器', 'BT 播放服务管理', () => _toast('BT 服务器配置入口')),
               _radioTile('外部播放器', _externalPlayer, <String>['内置播放器', 'VLC', 'mpv', 'PotPlayer'], (v) => setState(() => _externalPlayer = v)),
               _switchTile('自动连播', '播放结束后播放下一集', _autoPlay, (v) => setState(() => _autoPlay = v)),
               _switchTile('记忆播放位置', '恢复上次播放进度', _rememberPosition, (v) => setState(() => _rememberPosition = v)),

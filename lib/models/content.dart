@@ -13,6 +13,9 @@ class MediaItem {
   final String? author;
   final String? year;
   final String? category;
+  final String? album;
+  final String? playUrl;
+  final String? lyrics;
   final List<MediaEpisode> episodes;
 
   const MediaItem({
@@ -26,22 +29,28 @@ class MediaItem {
     this.author,
     this.year,
     this.category,
+    this.album,
+    this.playUrl,
+    this.lyrics,
     this.episodes = const [],
   });
 
   factory MediaItem.fromMap(Map<String, dynamic> json, String sourceId, ContentType type) {
     final rawEpisodes = json['episodes'] ?? json['chapters'] ?? json['chapterList'] ?? json['vod_play_url'];
     return MediaItem(
-      id: (json['id'] ?? json['vod_id'] ?? json['book_id'] ?? '').toString(),
-      title: (json['title'] ?? json['name'] ?? json['vod_name'] ?? json['book_name'] ?? '').toString(),
-      cover: (json['cover'] ?? json['pic'] ?? json['vod_pic'] ?? '').toString().split('|').first,
-      description: (json['description'] ?? json['desc'] ?? json['content'] ?? json['vod_content'] ?? '').toString(),
+      id: (json['id'] ?? json['vod_id'] ?? json['book_id'] ?? json['song_id'] ?? '').toString(),
+      title: (json['title'] ?? json['name'] ?? json['vod_name'] ?? json['book_name'] ?? json['song_name'] ?? json['songName'] ?? '').toString(),
+      cover: (json['cover'] ?? json['pic'] ?? json['vod_pic'] ?? json['album_pic'] ?? json['picUrl'] ?? json['coverUrl'] ?? '').toString().split('|').first,
+      description: (json['description'] ?? json['desc'] ?? json['content'] ?? json['vod_content'] ?? json['album'] ?? '').toString(),
       sourceId: sourceId,
       type: type,
-      remark: (json['remark'] ?? json['vod_remarks'] ?? json['status'])?.toString(),
-      author: (json['author'] ?? json['artist'] ?? json['vod_actor'])?.toString(),
-      year: (json['year'] ?? json['vod_year'])?.toString(),
-      category: (json['category'] ?? json['type_name'])?.toString(),
+      remark: (json['remark'] ?? json['vod_remarks'] ?? json['status'] ?? json['quality'])?.toString(),
+      author: (json['author'] ?? json['artist'] ?? json['singer'] ?? json['song_singer'] ?? json['vod_actor'])?.toString(),
+      year: (json['year'] ?? json['vod_year'] ?? json['duration'])?.toString(),
+      category: (json['category'] ?? json['type_name'] ?? json['genre'] ?? json['type'])?.toString(),
+      album: (json['album'] ?? json['album_name'])?.toString(),
+      playUrl: (json['playUrl'] ?? json['play_url'] ?? json['url'] ?? json['audio_url'])?.toString(),
+      lyrics: (json['lyrics'] ?? json['lyric'] ?? json['lrc'])?.toString(),
       episodes: _episodes(rawEpisodes),
     );
   }
@@ -51,11 +60,10 @@ class MediaItem {
       return value.whereType<Map>().map((e) => MediaEpisode(
         id: (e['id'] ?? e['url'] ?? e['chapterId'] ?? '').toString(),
         title: (e['title'] ?? e['name'] ?? e['chapterName'] ?? '').toString(),
-        url: (e['url'] ?? e['link'] ?? e['chapterUrl'] ?? '').toString(),
-      )).toList();
+        url: (e['url'] ?? e['link'] ?? e['chapterUrl'] ?? e['playUrl'] ?? '').toString(),
+      )).where((e) => e.url.isNotEmpty).toList();
     }
     if (value is String && value.isNotEmpty) {
-      // TVBox uses $$$ between play lines; some extensions use ###.
       return value.split(RegExp(r'\$\$\$|###')).expand((group) => group.split('#')).map((part) {
         final pieces = part.split(r'$');
         return MediaEpisode(
@@ -79,6 +87,9 @@ class MediaItem {
     'author': author,
     'year': year,
     'category': category,
+    'album': album,
+    'playUrl': playUrl,
+    'lyrics': lyrics,
   };
 }
 
