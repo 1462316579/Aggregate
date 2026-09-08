@@ -10,24 +10,33 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     
     steps:
       - uses: actions/checkout@v4
       
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Flutter 3.10
+        uses: subosito/flutter-action@v1
         with:
-          flutter-version: '3.16.9'
+          flutter-version: '3.10.6'
           channel: 'stable'
+          cache: true
+          cache-key: flutter-:-os-:-${{ runner.os }}-:-${{ hashFiles('**/pubspec.lock') }}
       
-      - run: flutter clean
-      - run: flutter pub get
+      - name: Clean and get dependencies
+        run: |
+          flutter clean
+          flutter pub get --no-cache || flutter pub get
+      
+      - name: Verify Flutter build
+        run: flutter doctor -v
       
       - name: Build APK
-        run: flutter build apk --debug
+        run: |
+          flutter build apk --debug --verbose 2>&1 | tail -100
       
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: allplay-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
