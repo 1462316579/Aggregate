@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/content.dart';
@@ -73,8 +74,10 @@ class AppConfig {
     await _prefs?.setString('history', jsonEncode(list));
   }
 
-  static Future<void> clearHistory() async {
-    await _prefs?.remove('history');
+  static Future<void> removeHistoryItem(MediaItem item) async {
+    final list = await getHistory();
+    list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    await _prefs?.setString('history', jsonEncode(list));
   }
 
   static Future<List<Map<String, dynamic>>> getFavorites() async {

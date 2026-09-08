@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'search_page.dart';
+import 'history_page.dart';
 
 /// Android home intentionally contains only the global search entry.
 class HomePage extends StatelessWidget {
@@ -34,7 +35,15 @@ class HomePage extends StatelessWidget {
                       style: TextStyle(color: Colors.grey[600], fontSize: 15),
                     ),
                   ),
-                  Icon(Icons.arrow_forward_ios, size: 15, color: Colors.grey[500]),
+                  IconButton(
+                    icon: Icon(Icons.history, color: Colors.grey[600]),
+                    onPressed: () => Navigator.push<void>(
+                      context,
+                      MaterialPageRoute<void>(builder: (_) => const HistoryPage()),
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                  ),
                 ],
               ),
             ),

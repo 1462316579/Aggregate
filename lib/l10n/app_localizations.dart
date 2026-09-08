@@ -46,7 +46,7 @@ class AppStrings {
       'exportSources': '导出源配置', 'sourceEmpty': '暂无源', 'addSource': '添加源',
       'sourceName': '源名称', 'apiAddress': 'API 地址', 'cancel': '取消', 'save': '保存',
       'close': '关闭', 'imported': '已导入', 'sources': '个源', 'copied': '配置已复制到剪贴板',
-      'tmdbHint': '输入 TMDB API Key', 'confirm': '确定', 'playback': '播放',
+      'tmdbHint': '输入 TMDB API Key', 'confirm': '确定', 'playback': '播放', 'favorites': '收藏', 'history': '历史', 'video': '视频', 'comic': '漫画', 'novel': '小说', 'music': '音乐',
     },
     'zhHant': <String, String>{
       'home': '首頁', 'plugin': '外掛', 'settings': '設定', 'search': '搜尋',
@@ -75,7 +75,7 @@ class AppStrings {
       'importSources': '匯入來源設定', 'exportSources': '匯出來源設定', 'sourceEmpty': '暫無來源',
       'addSource': '新增來源', 'sourceName': '來源名稱', 'apiAddress': 'API 位址', 'cancel': '取消',
       'save': '儲存', 'close': '關閉', 'imported': '已匯入', 'sources': '個來源', 'copied': '設定已複製到剪貼簿',
-      'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放',
+      'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放', 'favorites': '收藏', 'history': '歷史', 'video': '視頻', 'comic': '漫畫', 'novel': '小說', 'music': '音樂',
     },
     'en': <String, String>{
       'home': 'Home', 'plugin': 'Plugins', 'settings': 'Settings', 'search': 'Search',
@@ -103,7 +103,7 @@ class AppStrings {
       'exportSources': 'Export source config', 'sourceEmpty': 'No sources', 'addSource': 'Add source',
       'sourceName': 'Source name', 'apiAddress': 'API address', 'cancel': 'Cancel', 'save': 'Save', 'close': 'Close',
       'imported': 'Imported', 'sources': ' sources', 'copied': 'Configuration copied to clipboard',
-      'tmdbHint': 'Enter TMDB API Key', 'confirm': 'OK', 'playback': 'Play',
+      'tmdbHint': 'Enter TMDB API Key', 'confirm': 'OK', 'playback': 'Play', 'favorites': 'Favorites', 'history': 'History', 'video': 'Video', 'comic': 'Comic', 'novel': 'Novel', 'music': 'Music',
     },
     'ja': <String, String>{
       'home': 'ホーム', 'plugin': 'プラグイン', 'settings': '設定', 'search': '検索',
@@ -127,7 +127,7 @@ class AppStrings {
       'sourceManager': 'ソース管理', 'sourceSubtitle': '動画、漫画、小説、音楽ソースを管理', 'importSources': 'ソース設定をインポート',
       'exportSources': 'ソース設定をエクスポート', 'sourceEmpty': 'ソースなし', 'addSource': 'ソースを追加',
       'sourceName': 'ソース名', 'apiAddress': 'APIアドレス', 'cancel': 'キャンセル', 'save': '保存', 'close': '閉じる',
-      'imported': 'インポート済み', 'sources': ' ソース', 'copied': '設定をクリップボードにコピーしました', 'tmdbHint': 'TMDB APIキーを入力', 'confirm': '確認', 'playback': '再生',
+      'imported': 'インポート済み', 'sources': ' ソース', 'copied': '設定をクリップボードにコピーしました', 'tmdbHint': 'TMDB APIキーを入力', 'confirm': '確認', 'playback': '再生', 'favorites': 'お気に入り', 'history': '履歴', 'video': '動画', 'comic': '漫画', 'novel': '小説', 'music': '音楽',
     },
     'ko': <String, String>{
       'home': '홈', 'plugin': '플러그인', 'settings': '설정', 'search': '검색', 'searchHint': '동영상, 만화, 소설, 음악 검색',
@@ -144,7 +144,7 @@ class AppStrings {
       'saveLog': '로그 저장', 'saveLogSubtitle': '앱 실행 로그 저장', 'exportLog': '로그 내보내기', 'clearLog': '로그 지우기', 'about': '정보', 'aboutSubtitle': '버전 및 업데이트',
       'checkUpdate': '업데이트 확인', 'latest': '최신 버전입니다', 'sourceManager': '소스 관리', 'sourceSubtitle': '동영상, 만화, 소설, 음악 소스 관리', 'importSources': '소스 설정 가져오기',
       'exportSources': '소스 설정 내보내기', 'sourceEmpty': '소스 없음', 'addSource': '소스 추가', 'sourceName': '소스 이름', 'apiAddress': 'API 주소', 'cancel': '취소', 'save': '저장', 'close': '닫기',
-      'imported': '가져옴', 'sources': '개 소스', 'copied': '설정을 클립보드에 복사했습니다', 'tmdbHint': 'TMDB API 키 입력', 'confirm': '확인', 'playback': '재생',
+      'imported': '가져옴', 'sources': '개 소스', 'copied': '설정을 클립보드에 복사했습니다', 'tmdbHint': 'TMDB API 키 입력', 'confirm': '확인', 'playback': '재생', 'favorites': '즐겨찾기', 'history': '히스토리', 'video': '동영상', 'comic': '만화', 'novel': '소설', 'music': '음악',
     },
     'bo': <String, String>{
       'home': 'གཙོ་ངོས།', 'plugin': 'རྒྱུད་སྣོན།', 'settings': 'སྒྲིག་འགོད།', 'search': 'འཚོལ་ཞིབ།',
@@ -159,7 +159,7 @@ class AppStrings {
       'imageFit': 'རི་མོའི་འཚམ་སྒྲིག', 'width': 'ཞེང་ཚད།', 'height': 'མཐོ་ཚད།', 'original': 'གདོད་མ།', 'volumeTurning': 'སྒྲ་ཚད་མཐེབ་གཞོང་ཤོག་ངོས་བསྒྱུར།', 'enabled': 'སྤྱོད་འགོད།', 'disabled': 'སྤྱོད་མི་འགོད།',
       'network': 'དྲ་རྒྱ།', 'networkSubtitle': 'User-Agent དང་ལས་ཚབ།', 'userAgent': 'User-Agent', 'defaultSystem': 'མ་ལག་སྔོན་སྒྲིག', 'proxyType': 'ལས་ཚབ་རིགས།', 'direct': 'ཐད་ཀར།', 'http': 'HTTP', 'socks4': 'SOCKS4', 'socks5': 'SOCKS5', 'proxyAddress': 'ལས་ཚབ་གནས་ཡུལ།', 'notSet': 'སྒྲིག་མེད།',
       'logs': 'ཉིན་ཐོ།', 'logsSubtitle': 'གནད་འབེབས་ཉིན་ཐོ།', 'saveLog': 'ཉིན་ཐོ་ཉར།', 'saveLogSubtitle': 'མ་ལག་གི་ཉིན་ཐོ་ཉར།', 'exportLog': 'ཉིན་ཐོ་ཕྱིར་འདྲེན།', 'clearLog': 'ཉིན་ཐོ་སེལ།', 'about': 'སྐོར་ལ།', 'aboutSubtitle': 'པར་གཞི་དང་གསར་བརྗེ།', 'checkUpdate': 'གསར་བརྗེ་ཞིབ་བཤེར།', 'latest': 'པར་གཞི་གསར་ཤོས་ཡིན།',
-      'sourceManager': 'ཁུངས་དོ་དམ།', 'sourceSubtitle': 'བརྙན་དང་དཔེ་ཆའི་ཁུངས་དོ་དམ།', 'importSources': 'ཁུངས་སྒྲིག་འཇུག', 'exportSources': 'ཁུངས་སྒྲིག་ཕྱིར་འདྲེན།', 'sourceEmpty': 'ཁུངས་མེད།', 'addSource': 'ཁུངས་ཁ་སྣོན།', 'sourceName': 'ཁུངས་མིང་།', 'apiAddress': 'API གནས་ཡུལ།', 'cancel': 'ཕྱིར་འཐེན།', 'save': 'ཉར།', 'close': 'སྒོ་རྒྱག', 'imported': 'འཇུག་ཟིན།', 'sources': ' ཁུངས།', 'copied': 'སྒྲིག་འགོད་འདྲ་བཤུས་ཟིན།', 'tmdbHint': 'TMDB API ལྡེ་མིག་འཇུག', 'confirm': 'གཏན་འཁེལ།', 'playback': 'གཏོང་།',
+      'sourceManager': 'ཁུངས་དོ་དམ།', 'sourceSubtitle': 'བརྙན་དང་དཔེ་ཆའི་ཁུངས་དོ་དམ།', 'importSources': 'ཁུངས་སྒྲིག་འཇུག', 'exportSources': 'ཁུངས་སྒྲིག་ཕྱིར་འདྲེན།', 'sourceEmpty': 'ཁུངས་མེད།', 'addSource': 'ཁུངས་ཁ་སྣོན།', 'sourceName': 'ཁུངས་མིང་།', 'apiAddress': 'API གནས་ཡུལ།', 'cancel': 'ཕྱིར་འཐེན།', 'save': 'ཉར།', 'close': 'སྒོ་རྒྱག', 'imported': 'འཇུག་ཟིན།', 'sources': ' ཁུངས།', 'copied': 'སྒྲིག་འགོད་འདྲ་བཤུས་ཟིན།', 'tmdbHint': 'TMDB API ལྡེ་མིག་འཇུག', 'confirm': 'གཏན་འཁེལ།', 'playback': 'གཏོང་།', 'favorites': 'སོགས', 'history': 'ཉིན་ཐོ', 'video': 'བརྙན', 'comic': 'རྒྱལ', 'novel': 'བརྗོད', 'music': 'གཏོང',
     },
     'yue': <String, String>{
       'home': '首頁', 'plugin': '插件', 'settings': '設定', 'search': '搜尋', 'searchHint': '搜尋影片、漫畫、小說、音樂', 'general': '一般', 'generalSubtitle': 'TMDB、語言、主題同啟動設定',
@@ -168,7 +168,7 @@ class AppStrings {
       'autoPlay': '自動連播', 'autoPlaySubtitle': '播完自動播下一集', 'rememberPosition': '記住播放位置', 'rememberPositionSubtitle': '恢復上次播放進度', 'hardwareDecode': '硬件解碼', 'hardwareDecodeSubtitle': '優先使用硬件解碼', 'reader': '閱讀器', 'readerSubtitle': '小說同漫畫閱讀設定',
       'readerMode': '預設閱讀模式', 'standard': '標準', 'leftRight': '左右', 'upDown': '上下', 'preload': '預載下一頁', 'preloadSubtitle': '預先載入下一張圖片', 'imageFit': '圖片適應', 'width': '闊度', 'height': '高度', 'original': '原圖', 'volumeTurning': '音量鍵翻頁', 'enabled': '開啟', 'disabled': '關閉',
       'network': '網絡', 'networkSubtitle': 'User-Agent 同代理協議', 'userAgent': 'User-Agent', 'defaultSystem': '系統預設', 'proxyType': '代理類型', 'direct': '直連', 'http': 'HTTP', 'socks4': 'SOCKS4', 'socks5': 'SOCKS5', 'proxyAddress': '代理地址', 'notSet': '未設定', 'logs': '日誌', 'logsSubtitle': '除錯日誌', 'saveLog': '保存日誌', 'saveLogSubtitle': '保存程式運行日誌', 'exportLog': '匯出日誌', 'clearLog': '清除日誌', 'about': '關於', 'aboutSubtitle': '版本同更新', 'checkUpdate': '檢查更新', 'latest': '而家已經係最新版本',
-      'sourceManager': '來源管理', 'sourceSubtitle': '管理影片、漫畫、小說、音樂來源', 'importSources': '匯入來源設定', 'exportSources': '匯出來源設定', 'sourceEmpty': '暫時冇來源', 'addSource': '新增來源', 'sourceName': '來源名稱', 'apiAddress': 'API 地址', 'cancel': '取消', 'save': '保存', 'close': '關閉', 'imported': '已匯入', 'sources': '個來源', 'copied': '設定已複製到剪貼簿', 'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放',
+      'sourceManager': '來源管理', 'sourceSubtitle': '管理影片、漫畫、小說、音樂來源', 'importSources': '匯入來源設定', 'exportSources': '匯出來源設定', 'sourceEmpty': '暫時冇來源', 'addSource': '新增來源', 'sourceName': '來源名稱', 'apiAddress': 'API 地址', 'cancel': '取消', 'save': '保存', 'close': '關閉', 'imported': '已匯入', 'sources': '個來源', 'copied': '設定已複製到剪貼簿', 'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放', 'favorites': '收藏', 'history': '歷史', 'video': '影片', 'comic': '漫畫', 'novel': '小說', 'music': '音樂',
     },
   };
 

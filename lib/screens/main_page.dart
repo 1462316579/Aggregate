@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart';
+import 'favorites_page.dart';
+import 'history_page.dart';
 import 'plugin/plugin_page.dart';
 import 'settings/settings_page.dart';
 import '../l10n/app_localizations.dart';
@@ -18,6 +20,8 @@ class _MainPageState extends State<MainPage> {
 
   static const _pages = <Widget>[
     HomePage(),
+    FavoritesPage(),
+    HistoryPage(),
     PluginPage(),
     SettingsPage(),
   ];
@@ -30,6 +34,8 @@ class _MainPageState extends State<MainPage> {
         final s = AppStrings.of(language);
         final destinations = <NavigationDestination>[
           NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: s.t('home')),
+          NavigationDestination(icon: const Icon(Icons.favorite_outline), selectedIcon: const Icon(Icons.favorite), label: s.t('favorites')),
+          NavigationDestination(icon: const Icon(Icons.history_outlined), selectedIcon: const Icon(Icons.history), label: s.t('history')),
           NavigationDestination(icon: const Icon(Icons.extension_outlined), selectedIcon: const Icon(Icons.extension), label: s.t('plugin')),
           NavigationDestination(icon: const Icon(Icons.settings_outlined), selectedIcon: const Icon(Icons.settings), label: s.t('settings')),
         ];
@@ -70,6 +76,8 @@ class _MainPageState extends State<MainPage> {
                     ),
                     destinations: <NavigationRailDestination>[
                       NavigationRailDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home), label: Text(s.t('home'))),
+                      NavigationRailDestination(icon: const Icon(Icons.favorite_outline), selectedIcon: const Icon(Icons.favorite), label: Text(s.t('favorites'))),
+                      NavigationRailDestination(icon: const Icon(Icons.history_outlined), selectedIcon: const Icon(Icons.history), label: Text(s.t('history'))),
                       NavigationRailDestination(icon: const Icon(Icons.extension_outlined), selectedIcon: const Icon(Icons.extension), label: Text(s.t('plugin'))),
                       NavigationRailDestination(icon: const Icon(Icons.settings_outlined), selectedIcon: const Icon(Icons.settings), label: Text(s.t('settings'))),
                     ],
