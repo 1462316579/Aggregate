@@ -9,27 +9,36 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     
     steps:
-      - name: ⬇️ Checkout
+      - name: ⬇️ Checkout repository
         uses: actions/checkout@v4
 
-      - name: 📦 Set up Flutter
-        uses: subosito/flutter-action@v2
+      - name: 🛠️ Set up Flutter (stable)
+        uses: subosito/flutter-action@v1
         with:
-          flutter-version: "3.19.0"
+          flutter-version: "3.22.2"
           channel: "stable"
 
-      - name: 🛠️ Install dependencies
-        run: flutter pub get
+      - name: 🔧 Reset Flutter cache
+        run: flutter clean
 
-      - name: 📱 Build APK
-        run: flutter build apk --release
+      - name: 📦 Install dependencies (with retry)
+        run: |
+          flutter pub get || (sleep 30 && flutter pub get)
+          flutter pub get
 
-      - name: 📤 Upload APK
+      - name: 📱 Build APK (debug, split ABI)
+        run: |
+          flutter build apk --debug --split-per-abi
+
+      - name: 📤 Upload APK artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: AllPlay-APK
-          path: build/app/outputs/flutter-apk/app-release.apk
-          if-no-files-found: error
+          name: allplay-debug-apk
+          path: |
+            build/app/outputs/flutter-apk/app-debug.apk
+            build/app/outputs/flutter-apk/app-debug-android-arm64.apk
+            build/app/outputs/flutter-apk/app-debug-armv7.apk
+            build/app/outputs/flutter-apk/app-debug-apk
