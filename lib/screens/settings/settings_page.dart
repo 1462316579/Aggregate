@@ -173,14 +173,14 @@ class _SettingsPageState extends State<SettingsPage> {
   String _externalPlayerLabel(AppStrings s) => <String, String>{'builtin': s.t('builtinPlayer'), 'vlc': 'VLC', 'mpv': 'mpv', 'potplayer': 'PotPlayer'}[_externalPlayerCode] ?? s.t('builtinPlayer');
   String _proxyTypeLabel(AppStrings s) => <String, String>{'DIRECT': s.t('direct'), 'HTTP': s.t('http'), 'SOCKS4': s.t('socks4'), 'SOCKS5': s.t('socks5')}[_proxyType] ?? _proxyType;
 
-  void _radioDialog(String title, String current, List<String> values, ValueChanged<String> onChanged, {Map<String, String>? labels}) {
+  void _radioDialog(String title, String currentValue, List<String> values, ValueChanged<String> onChanged, {Map<String, String>? labels}) {
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(title),
         content: Column(mainAxisSize: MainAxisSize.min, children: values.map((value) => RadioListTile<String>(
-          title: Text(labels?[value] ?? value), value: value, groupValue: labels?.entries.firstWhere((e) => e.value == current, orElse: () => MapEntry(value, value)).key ?? current,
-          onChanged: (selected) { if (selected != null) { onChanged(selected); Navigator.pop(ctx); } },
+          title: Text(labels?[value] ?? value), value: value, groupValue: currentValue,
+          onChanged: (selected) { if (selected != null) { Navigator.pop(ctx); onChanged(selected); } },
         )).toList()),
       ),
     );
