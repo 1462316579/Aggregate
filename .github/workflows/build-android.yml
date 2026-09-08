@@ -5,11 +5,12 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     
     steps:
       - name: ⬇️ Checkout repository
@@ -21,13 +22,12 @@ jobs:
           flutter-version: "3.22.2"
           channel: "stable"
 
-      - name: 🔧 Reset Flutter cache
+      - name: 🧹 Clean Flutter project
         run: flutter clean
 
-      - name: 📦 Install dependencies (with retry)
+      - name: 📦 Install dependencies
         run: |
-          flutter pub get || (sleep 30 && flutter pub get)
-          flutter pub get
+          flutter pub get --no-packages-upgrade
 
       - name: 📱 Build APK (debug, split ABI)
         run: |
