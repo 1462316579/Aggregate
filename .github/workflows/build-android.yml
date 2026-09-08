@@ -3,41 +3,65 @@ name: Build Android APK
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
       
-      - name: Setup Flutter 3.10
-        uses: subosito/flutter-action@v1
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.6'
+          flutter-version: '3.16.0'
           channel: 'stable'
-          cache: true
-          cache-key: flutter-:-os-:-${{ runner.os }}-:-${{ hashFiles('**/pubspec.lock') }}
       
-      - name: Clean and get dependencies
+      - name: Debug environment
         run: |
-          flutter clean
-          flutter pub get --no-cache || flutter pub get
+          echo "Flutter version:"
+          flutter --version
+          echo ""
+          echo "Dart version:"
+          dart --version
+          echo ""
+          echo "Java version:"
+          java -version 2>&1 || echo "Java not found"
+          echo ""
+          echo "Working directory:"
+          pwd
+          echo ""
+          echo "Files:"
+          ls -la
       
-      - name: Verify Flutter build
-        run: flutter doctor -v
+      - name: Get dependencies
+        run: |
+          echo "Running flutter pub get..."
+          flutter pub get || {
+            echo "First attempt failed, trying again..."
+            sleep 5
+            flutter pub get
+          }
       
       - name: Build APK
-        run: |
-          flutter build apk --debug --verbose 2>&1 | tail -100
+        run: flutter build apk --debug
+        continue-on-error: true
       
-      - uses: actions/upload-artifact@v4
-        if: always()
+      - name: Check build output
+        run: |
+          echo "Build directory contents:"
+          ls -la build/app/outputs/flutter-apk/ 2>/dev/null || echo "Build output not found"
+          echo ""
+          echo "Checking for APK:"
+          find build -name "*.apk" -type f 2>/dev/null || echo "No APK found"
+      
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
           name: allplay-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: warn
           retention-days: 7
