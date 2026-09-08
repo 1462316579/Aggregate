@@ -26,6 +26,12 @@ class AppConfig {
   static String webdavPassword = '';
   static String webdavPath = '/';
 
+  // AI settings
+  static String aiConfigName = '';
+  static String aiApiUrl = '';
+  static String aiApiKey = '';
+  static String aiModel = 'gpt-3.5-turbo';
+
   // TMDB key
   static String tmdbKey = '';
 
@@ -44,6 +50,11 @@ class AppConfig {
     webdavUsername = prefs.getString('webdavUsername') ?? '';
     webdavPassword = prefs.getString('webdavPassword') ?? '';
     webdavPath = prefs.getString('webdavPath') ?? '/';
+    // AI settings
+    aiConfigName = prefs.getString('aiConfigName') ?? '';
+    aiApiUrl = prefs.getString('aiApiUrl') ?? '';
+    aiApiKey = prefs.getString('aiApiKey') ?? '';
+    aiModel = prefs.getString('aiModel') ?? 'gpt-3.5-turbo';
     _sourcesCache = _parseSources(prefs.getString('sources') ?? '[]');
     _favoritesCache = _parseJsonList(prefs.getString('favorites') ?? '[]');
     _historyCache = _parseJsonList(prefs.getString('history') ?? '[]');
@@ -100,13 +111,34 @@ class AppConfig {
     await _prefs?.setString('webdavPath', value);
   }
 
+  // AI setters
+  static Future<void> setAiConfigName(String value) async {
+    aiConfigName = value;
+    await _prefs?.setString('aiConfigName', value);
+  }
+
+  static Future<void> setAiApiUrl(String value) async {
+    aiApiUrl = value;
+    await _prefs?.setString('aiApiUrl', value);
+  }
+
+  static Future<void> setAiApiKey(String value) async {
+    aiApiKey = value;
+    await _prefs?.setString('aiApiKey', value);
+  }
+
+  static Future<void> setAiModel(String value) async {
+    aiModel = value;
+    await _prefs?.setString('aiModel', value);
+  }
+
   static List<SourceDefinition> get sources => _sourcesCache;
   static List<Map<String, dynamic>> get favorites => _favoritesCache;
   static List<Map<String, dynamic>> get history => _historyCache;
 
   static Future<void> saveSources(List<SourceDefinition> sources) async {
     _sourcesCache = sources;
-    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toSource()).toList()));
+    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toMap()).toList()));
   }
 
   static Future<void> toggleFavorite(MediaItem item) async {
@@ -141,9 +173,7 @@ class AppConfig {
 
   static Future<void> addHistoryItem(MediaItem item) async {
     final list = List<Map<String, dynamic>>.from(_historyCache);
-    // Remove existing item with same id and source
     list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    // Add to front
     list.insert(0, <String, dynamic>{
       'id': item.id,
       'sourceId': item.sourceId,
@@ -154,7 +184,6 @@ class AppConfig {
       'url': item.url,
       'createdAt': DateTime.now().toIso8601String(),
     });
-    // Limit to 200 items
     if (list.length > 200) {
       list.removeRange(200, list.length);
     }
@@ -172,6 +201,16 @@ class AppConfig {
   static Future<void> clearHistory() async {
     _historyCache = <Map<String, dynamic>>[];
     await _prefs?.remove('history');
+  }
+
+  static Future<void> setFavorites(List<Map<String, dynamic>> items) async {
+    _favoritesCache = items;
+    await _prefs?.setString('favorites', jsonEncode(items));
+  }
+
+  static Future<void> setHistory(List<Map<String, dynamic>> items) async {
+    _historyCache = items;
+    await _prefs?.setString('history', jsonEncode(items));
   }
 
   static List<SourceDefinition> _parseSources(String jsonStr) {

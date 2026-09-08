@@ -35,6 +35,10 @@ class _SettingsPageState extends State<SettingsPage> {
   String _webdavPassword = '';
   String _webdavPath = '/';
   bool _webdavEnabled = false;
+  String _aiConfigName = '';
+  String _aiApiUrl = '';
+  String _aiApiKey = '';
+  String _aiModel = 'gpt-3.5-turbo';
   final List<String> _logs = <String>[];
 
   @override
@@ -49,6 +53,10 @@ class _SettingsPageState extends State<SettingsPage> {
     _webdavUsername = AppConfig.webdavUsername;
     _webdavPath = AppConfig.webdavPath;
     _webdavEnabled = AppConfig.webdavEnabled;
+    _aiConfigName = AppConfig.aiConfigName;
+    _aiApiUrl = AppConfig.aiApiUrl;
+    _aiApiKey = AppConfig.aiApiKey;
+    _aiModel = AppConfig.aiModel;
   }
 
   @override
@@ -150,6 +158,14 @@ class _SettingsPageState extends State<SettingsPage> {
                     ],
                   ),
                 ],
+              ]),
+              _group(s, Icons.brain_outlined, 'ai', 'aiSubtitle', <Widget>[
+                _inputTile(s.t('aiConfigName'), _aiConfigName.isEmpty ? s.t('notSet') : _aiConfigName, () => _textDialog(s.t('aiConfigName'), _aiConfigName, false)),
+                _inputTile(s.t('aiApiUrl'), _aiApiUrl.isEmpty ? s.t('notSet') : _aiApiUrl, () => _textDialog(s.t('aiApiUrl'), _aiApiUrl, false)),
+                _inputTile(s.t('aiApiKey'), s.t('passwordSet'), () => _textDialog(s.t('aiApiKey'), _aiApiKey, true)),
+                _radioTile(s.t('aiModel'), _aiModel, <String>['gpt-3.5-turbo', 'gpt-4', 'gpt-4o'], (value) => setState(() => _aiModel = value), labels: <String, String>{
+                  'gpt-3.5-turbo': s.t('gpt-3.5-turbo'), 'gpt-4': s.t('gpt-4'), 'gpt-4o': s.t('gpt-4o'),
+                }),
               ]),
               _group(s, Icons.info_outline, 'about', 'aboutSubtitle', <Widget>[
                 _itemTile(Icons.system_update, s.t('checkUpdate'), s.t('latest'), _checkUpdate),
