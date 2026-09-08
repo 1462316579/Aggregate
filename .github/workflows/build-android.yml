@@ -12,29 +12,24 @@ jobs:
     timeout-minutes: 30
     
     steps:
-      - name: ⬇️ Checkout repository
+      - name: ⬇️ Checkout
         uses: actions/checkout@v4
 
       - name: 📦 Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.22.2"
+          flutter-version: "3.19.0"
           channel: "stable"
 
       - name: 🛠️ Install dependencies
-        run: |
-          flutter pub get --no-packages-upgrade
+        run: flutter pub get
 
-      - name: 📱 Build APK (debug)
-        run: |
-          flutter build apk --debug --split-per-abi
+      - name: 📱 Build APK
+        run: flutter build apk --release
 
-      - name: 📤 Upload APK artifact
+      - name: 📤 Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: allplay-debug-apk
-          path: |
-            build/app/outputs/flutter-apk/app-debug.apk
-            build/app/outputs/flutter-apk/app-debug-android-arm64.apk
-            build/app/outputs/flutter-apk/app-debug-armv7.apk
-            build/app/outputs/flutter-apk/app-debug-apk
+          name: AllPlay-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
