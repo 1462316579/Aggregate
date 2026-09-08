@@ -47,6 +47,7 @@ class AppStrings {
       'sourceName': '源名称', 'apiAddress': 'API 地址', 'cancel': '取消', 'save': '保存',
       'close': '关闭', 'imported': '已导入', 'sources': '个源', 'copied': '配置已复制到剪贴板',
       'tmdbHint': '输入 TMDB API Key', 'confirm': '确定', 'playback': '播放', 'favorites': '收藏', 'history': '历史', 'video': '视频', 'comic': '漫画', 'novel': '小说', 'music': '音乐',
+      'webdav': 'WebDAV', 'webdavSubtitle': '云端备份与恢复', 'webdavEnable': '启用 WebDAV', 'webdavEnableSubtitle': '开启后支持云端备份与恢复', 'webdavHost': '服务器地址', 'webdavUsername': '用户名', 'webdavPassword': '密码', 'webdavPath': '远程路径', 'webdavPing': '测试连接', 'webdavBackup': '上传备份', 'webdavRestore': '下载恢复', 'webdavConnected': '连接成功', 'webdavError': '连接失败', 'webdavBackingUp': '正在上传备份...', 'webdavBackupSuccess': '备份上传成功', 'webdavRestoring': '正在恢复...', 'webdavRestoreSuccess': '恢复成功', 'webdavRestoreConfirm': '恢复将覆盖当前所有数据，确定继续？', 'webdavPickFile': '选择备份文件', 'webdavNoFiles': '暂无备份文件',
     },
     'zhHant': <String, String>{
       'home': '首頁', 'plugin': '外掛', 'settings': '設定', 'search': '搜尋',
@@ -76,6 +77,7 @@ class AppStrings {
       'addSource': '新增來源', 'sourceName': '來源名稱', 'apiAddress': 'API 位址', 'cancel': '取消',
       'save': '儲存', 'close': '關閉', 'imported': '已匯入', 'sources': '個來源', 'copied': '設定已複製到剪貼簿',
       'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放', 'favorites': '收藏', 'history': '歷史', 'video': '視頻', 'comic': '漫畫', 'novel': '小說', 'music': '音樂',
+      'webdav': 'WebDAV', 'webdavSubtitle': '雲端備份與恢復', 'webdavEnable': '啟用 WebDAV', 'webdavEnableSubtitle': '開啟後支援雲端備份與恢復', 'webdavHost': '伺服器地址', 'webdavUsername': '使用者名稱', 'webdavPassword': '密碼', 'webdavPath': '遠端路徑', 'webdavPing': '測試連線', 'webdavBackup': '上傳備份', 'webdavRestore': '下載恢復', 'webdavConnected': '連線成功', 'webdavError': '連線失敗', 'webdavBackingUp': '正在上傳備份...', 'webdavBackupSuccess': '備份上傳成功', 'webdavRestoring': '正在恢復...', 'webdavRestoreSuccess': '恢復成功', 'webdavRestoreConfirm': '恢復將覆蓋當前所有資料，確定繼續？', 'webdavPickFile': '選擇備份檔案', 'webdavNoFiles': '暫無備份檔案',
     },
     'en': <String, String>{
       'home': 'Home', 'plugin': 'Plugins', 'settings': 'Settings', 'search': 'Search',
@@ -104,6 +106,7 @@ class AppStrings {
       'sourceName': 'Source name', 'apiAddress': 'API address', 'cancel': 'Cancel', 'save': 'Save', 'close': 'Close',
       'imported': 'Imported', 'sources': ' sources', 'copied': 'Configuration copied to clipboard',
       'tmdbHint': 'Enter TMDB API Key', 'confirm': 'OK', 'playback': 'Play', 'favorites': 'Favorites', 'history': 'History', 'video': 'Video', 'comic': 'Comic', 'novel': 'Novel', 'music': 'Music',
+      'webdav': 'WebDAV', 'webdavSubtitle': 'Cloud backup & restore', 'webdavEnable': 'Enable WebDAV', 'webdavEnableSubtitle': 'Enable cloud backup and restore', 'webdavHost': 'Server URL', 'webdavUsername': 'Username', 'webdavPassword': 'Password', 'webdavPath': 'Remote path', 'webdavPing': 'Test Connection', 'webdavBackup': 'Upload Backup', 'webdavRestore': 'Download & Restore', 'webdavConnected': 'Connected successfully', 'webdavError': 'Connection failed', 'webdavBackingUp': 'Uploading backup...', 'webdavBackupSuccess': 'Backup uploaded successfully', 'webdavRestoring': 'Restoring from backup...', 'webdavRestoreSuccess': 'Restore successful', 'webdavRestoreConfirm': 'Restore will overwrite all current data. Continue?', 'webdavPickFile': 'Select backup file', 'webdavNoFiles': 'No backup files found',
     },
     'ja': <String, String>{
       'home': 'ホーム', 'plugin': 'プラグイン', 'settings': '設定', 'search': '検索',
@@ -128,6 +131,7 @@ class AppStrings {
       'exportSources': 'ソース設定をエクスポート', 'sourceEmpty': 'ソースなし', 'addSource': 'ソースを追加',
       'sourceName': 'ソース名', 'apiAddress': 'APIアドレス', 'cancel': 'キャンセル', 'save': '保存', 'close': '閉じる',
       'imported': 'インポート済み', 'sources': ' ソース', 'copied': '設定をクリップボードにコピーしました', 'tmdbHint': 'TMDB APIキーを入力', 'confirm': '確認', 'playback': '再生', 'favorites': 'お気に入り', 'history': '履歴', 'video': '動画', 'comic': '漫画', 'novel': '小説', 'music': '音楽',
+      'webdav': 'WebDAV', 'webdavSubtitle': 'クラウドバックアップと復元', 'webdavEnable': 'WebDAVを有効化', 'webdavEnableSubtitle': 'クラウドバックアップと復元を有効化', 'webdavHost': 'サーバーURL', 'webdavUsername': 'ユーザー名', 'webdavPassword': 'パスワード', 'webdavPath': 'リモートパス', 'webdavPing': '接続テスト', 'webdavBackup': 'バックアップをアップロード', 'webdavRestore': '復元をダウンロード', 'webdavConnected': '接続に成功しました', 'webdavError': '接続に失敗しました', 'webdavBackingUp': 'バックアップをアップロード中...', 'webdavBackupSuccess': 'バックアップのアップロードに成功しました', 'webdavRestoring': '復元中...', 'webdavRestoreSuccess': '復元に成功しました', 'webdavRestoreConfirm': '復元すると現在のすべてのデータが上書きされます。続行しますか？', 'webdavPickFile': 'バックアップファイルを選択', 'webdavNoFiles': 'バックアップファイルがありません',
     },
     'ko': <String, String>{
       'home': '홈', 'plugin': '플러그인', 'settings': '설정', 'search': '검색', 'searchHint': '동영상, 만화, 소설, 음악 검색',
@@ -145,6 +149,7 @@ class AppStrings {
       'checkUpdate': '업데이트 확인', 'latest': '최신 버전입니다', 'sourceManager': '소스 관리', 'sourceSubtitle': '동영상, 만화, 소설, 음악 소스 관리', 'importSources': '소스 설정 가져오기',
       'exportSources': '소스 설정 내보내기', 'sourceEmpty': '소스 없음', 'addSource': '소스 추가', 'sourceName': '소스 이름', 'apiAddress': 'API 주소', 'cancel': '취소', 'save': '저장', 'close': '닫기',
       'imported': '가져옴', 'sources': '개 소스', 'copied': '설정을 클립보드에 복사했습니다', 'tmdbHint': 'TMDB API 키 입력', 'confirm': '확인', 'playback': '재생', 'favorites': '즐겨찾기', 'history': '히스토리', 'video': '동영상', 'comic': '만화', 'novel': '소설', 'music': '음악',
+      'webdav': 'WebDAV', 'webdavSubtitle': '클라우드 백업 및 복원', 'webdavEnable': 'WebDAV 활성화', 'webdavEnableSubtitle': '클라우드 백업 및 복원을 활성화합니다', 'webdavHost': '서버 URL', 'webdavUsername': '사용자 이름', 'webdavPassword': '비밀번호', 'webdavPath': '원격 경로', 'webdavPing': '연결 테스트', 'webdavBackup': '백업 업로드', 'webdavRestore': '복원 다운로드', 'webdavConnected': '연결 성공', 'webdavError': '연결 실패', 'webdavBackingUp': '백업 업로드 중...', 'webdavBackupSuccess': '백업 업로드 성공', 'webdavRestoring': '복원 중...', 'webdavRestoreSuccess': '복원 성공', 'webdavRestoreConfirm': '복원 시 현재 모든 데이터가 덮어씌워집니다. 계속하시겠습니까?', 'webdavPickFile': '백업 파일 선택', 'webdavNoFiles': '백업 파일이 없습니다',
     },
     'bo': <String, String>{
       'home': 'གཙོ་ངོས།', 'plugin': 'རྒྱུད་སྣོན།', 'settings': 'སྒྲིག་འགོད།', 'search': 'འཚོལ་ཞིབ།',
@@ -169,6 +174,7 @@ class AppStrings {
       'readerMode': '預設閱讀模式', 'standard': '標準', 'leftRight': '左右', 'upDown': '上下', 'preload': '預載下一頁', 'preloadSubtitle': '預先載入下一張圖片', 'imageFit': '圖片適應', 'width': '闊度', 'height': '高度', 'original': '原圖', 'volumeTurning': '音量鍵翻頁', 'enabled': '開啟', 'disabled': '關閉',
       'network': '網絡', 'networkSubtitle': 'User-Agent 同代理協議', 'userAgent': 'User-Agent', 'defaultSystem': '系統預設', 'proxyType': '代理類型', 'direct': '直連', 'http': 'HTTP', 'socks4': 'SOCKS4', 'socks5': 'SOCKS5', 'proxyAddress': '代理地址', 'notSet': '未設定', 'logs': '日誌', 'logsSubtitle': '除錯日誌', 'saveLog': '保存日誌', 'saveLogSubtitle': '保存程式運行日誌', 'exportLog': '匯出日誌', 'clearLog': '清除日誌', 'about': '關於', 'aboutSubtitle': '版本同更新', 'checkUpdate': '檢查更新', 'latest': '而家已經係最新版本',
       'sourceManager': '來源管理', 'sourceSubtitle': '管理影片、漫畫、小說、音樂來源', 'importSources': '匯入來源設定', 'exportSources': '匯出來源設定', 'sourceEmpty': '暫時冇來源', 'addSource': '新增來源', 'sourceName': '來源名稱', 'apiAddress': 'API 地址', 'cancel': '取消', 'save': '保存', 'close': '關閉', 'imported': '已匯入', 'sources': '個來源', 'copied': '設定已複製到剪貼簿', 'tmdbHint': '輸入 TMDB API Key', 'confirm': '確定', 'playback': '播放', 'favorites': '收藏', 'history': '歷史', 'video': '影片', 'comic': '漫畫', 'novel': '小說', 'music': '音樂',
+      'webdav': 'WebDAV', 'webdavSubtitle': '雲端備份與恢復', 'webdavEnable': '啟用 WebDAV', 'webdavEnableSubtitle': '開啟後支援雲端備份與恢復', 'webdavHost': '伺服器地址', 'webdavUsername': '使用者名稱', 'webdavPassword': '密碼', 'webdavPath': '遠端路徑', 'webdavPing': '測試連線', 'webdavBackup': '上傳備份', 'webdavRestore': '下載恢復', 'webdavConnected': '連線成功', 'webdavError': '連線失敗', 'webdavBackingUp': '正在上傳備份...', 'webdavBackupSuccess': '備份上傳成功', 'webdavRestoring': '正在恢復...', 'webdavRestoreSuccess': '恢復成功', 'webdavRestoreConfirm': '恢復將覆蓋當前所有資料，確定繼續？', 'webdavPickFile': '選擇備份檔案', 'webdavNoFiles': '暫無備份檔案',
     },
   };
 

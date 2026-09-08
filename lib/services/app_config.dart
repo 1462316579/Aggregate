@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/content.dart';
@@ -7,119 +6,188 @@ import '../models/content.dart';
 class AppConfig {
   static SharedPreferences? _prefs;
   static List<SourceDefinition> _sourcesCache = <SourceDefinition>[];
+  static List<Map<String, dynamic>> _favoritesCache = <Map<String, dynamic>>[];
+  static List<Map<String, dynamic>> _historyCache = <Map<String, dynamic>>[];
 
-  static List<SourceDefinition> get cachedSources => List.unmodifiable(_sourcesCache);
-  static final ValueNotifier<String> themeNotifier = ValueNotifier<String>('system');
   static final ValueNotifier<String> languageNotifier = ValueNotifier<String>('zh');
+  static String get language => languageNotifier.value;
+  static set language(String value) { languageNotifier.value = value; }
+
+  static final ValueNotifier<String> themeNotifier = ValueNotifier<String>('system');
+  static String get theme => themeNotifier.value;
+
+  static bool autoCheckUpdate = true;
+  static bool nsfw = false;
+
+  // WebDAV settings
+  static bool webdavEnabled = false;
+  static String webdavHost = '';
+  static String webdavUsername = '';
+  static String webdavPassword = '';
+  static String webdavPath = '/';
+
+  // TMDB key
+  static String tmdbKey = '';
 
   static Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
-    themeNotifier.value = theme;
+    languageNotifier.value = 'zh';
+    final prefs = await SharedPreferences.getInstance();
+    _prefs = prefs;
+    languageNotifier.value = prefs.getString('language') ?? 'zh';
+    themeNotifier.value = prefs.getString('theme') ?? 'system';
+    tmdbKey = prefs.getString('tmdbKey') ?? '';
+    autoCheckUpdate = prefs.getBool('autoCheckUpdate') ?? true;
+    nsfw = prefs.getBool('nsfw') ?? false;
+    // WebDAV
+    webdavEnabled = prefs.getBool('webdavEnabled') ?? false;
+    webdavHost = prefs.getString('webdavHost') ?? '';
+    webdavUsername = prefs.getString('webdavUsername') ?? '';
+    webdavPassword = prefs.getString('webdavPassword') ?? '';
+    webdavPath = prefs.getString('webdavPath') ?? '/';
+    _sourcesCache = _parseSources(prefs.getString('sources') ?? '[]');
+    _favoritesCache = _parseJsonList(prefs.getString('favorites') ?? '[]');
+    _historyCache = _parseJsonList(prefs.getString('history') ?? '[]');
+  }
+
+  static Future<void> setLanguage(String language) async {
     languageNotifier.value = language;
+    await _prefs?.setString('language', language);
   }
 
-  static String get tmdbKey => _prefs?.getString('tmdb_key') ?? '';
-  static Future<void> setTmdbKey(String value) async => _prefs?.setString('tmdb_key', value);
-
-  static String get language => _prefs?.getString('language') ?? 'zh';
-  static Future<void> setLanguage(String value) async {
-    await _prefs?.setString('language', value);
-    languageNotifier.value = value;
+  static Future<void> setTheme(String theme) async {
+    themeNotifier.value = theme;
+    await _prefs?.setString('theme', theme);
   }
 
-  static String get theme => _prefs?.getString('theme') ?? 'system';
-  static Future<void> setTheme(String value) async {
-    await _prefs?.setString('theme', value);
-    themeNotifier.value = value;
+  static Future<void> setTmdbKey(String key) async {
+    tmdbKey = key;
+    await _prefs?.setString('tmdbKey', key);
   }
 
-  static bool get autoCheckUpdate => _prefs?.getBool('auto_check_update') ?? true;
-  static Future<void> setAutoCheckUpdate(bool value) async => _prefs?.setBool('auto_check_update', value);
-
-  static bool get nsfw => _prefs?.getBool('nsfw') ?? false;
-  static Future<void> setNsfw(bool value) async => _prefs?.setBool('nsfw', value);
-
-  static Future<List<SourceDefinition>> getSources() async {
-    final raw = _prefs?.getString('sources');
-    if (raw == null || raw.isEmpty) {
-      _sourcesCache = defaultSources;
-      return _sourcesCache;
-    }
-    try {
-      final list = jsonDecode(raw) as List;
-      _sourcesCache = list.map((e) => SourceDefinition.fromMap(Map<String, dynamic>.from(e))).toList();
-      return _sourcesCache;
-    } catch (_) {
-      _sourcesCache = defaultSources;
-      return _sourcesCache;
-    }
+  static Future<void> setAutoCheckUpdate(bool value) async {
+    autoCheckUpdate = value;
+    await _prefs?.setBool('autoCheckUpdate', value);
   }
+
+  static Future<void> setNsfw(bool value) async {
+    nsfw = value;
+    await _prefs?.setBool('nsfw', value);
+  }
+
+  // WebDAV setters
+  static Future<void> setWebdavEnabled(bool value) async {
+    webdavEnabled = value;
+    await _prefs?.setBool('webdavEnabled', value);
+  }
+
+  static Future<void> setWebdavHost(String value) async {
+    webdavHost = value;
+    await _prefs?.setString('webdavHost', value);
+  }
+
+  static Future<void> setWebdavUsername(String value) async {
+    webdavUsername = value;
+    await _prefs?.setString('webdavUsername', value);
+  }
+
+  static Future<void> setWebdavPassword(String value) async {
+    webdavPassword = value;
+    await _prefs?.setString('webdavPassword', value);
+  }
+
+  static Future<void> setWebdavPath(String value) async {
+    webdavPath = value;
+    await _prefs?.setString('webdavPath', value);
+  }
+
+  static List<SourceDefinition> get sources => _sourcesCache;
+  static List<Map<String, dynamic>> get favorites => _favoritesCache;
+  static List<Map<String, dynamic>> get history => _historyCache;
 
   static Future<void> saveSources(List<SourceDefinition> sources) async {
-    _sourcesCache = List<SourceDefinition>.from(sources);
-    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toMap()).toList()));
+    _sourcesCache = sources;
+    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toSource()).toList()));
   }
 
-  static Future<List<Map<String, dynamic>>> getHistory() async {
-    final raw = _prefs?.getString('history');
-    if (raw == null) return [];
-    try { return List<Map<String, dynamic>>.from(jsonDecode(raw)); } catch (_) { return []; }
+  static Future<void> toggleFavorite(MediaItem item) async {
+    final list = List<Map<String, dynamic>>.from(_favoritesCache);
+    final idx = list.indexWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    if (idx >= 0) {
+      list.removeAt(idx);
+    } else {
+      list.add(<String, dynamic>{
+        'id': item.id,
+        'sourceId': item.sourceId,
+        'type': item.type,
+        'name': item.name,
+        'poster': item.poster,
+        'title': item.title,
+        'url': item.url,
+        'createdAt': DateTime.now().toIso8601String(),
+      });
+    }
+    _favoritesCache = list;
+    await _prefs?.setString('favorites', jsonEncode(list));
   }
 
-  static Future<void> addHistory(MediaItem item) async {
-    final list = await getHistory();
+  static bool isFavorite(MediaItem item) {
+    return _favoritesCache.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+  }
+
+  static Future<void> clearFavorites() async {
+    _favoritesCache = <Map<String, dynamic>>[];
+    await _prefs?.remove('favorites');
+  }
+
+  static Future<void> addHistoryItem(MediaItem item) async {
+    final list = List<Map<String, dynamic>>.from(_historyCache);
+    // Remove existing item with same id and source
     list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    list.insert(0, item.toMap());
-    if (list.length > 100) list.removeRange(100, list.length);
+    // Add to front
+    list.insert(0, <String, dynamic>{
+      'id': item.id,
+      'sourceId': item.sourceId,
+      'type': item.type,
+      'name': item.name,
+      'poster': item.poster,
+      'title': item.title,
+      'url': item.url,
+      'createdAt': DateTime.now().toIso8601String(),
+    });
+    // Limit to 200 items
+    if (list.length > 200) {
+      list.removeRange(200, list.length);
+    }
+    _historyCache = list;
     await _prefs?.setString('history', jsonEncode(list));
   }
 
   static Future<void> removeHistoryItem(MediaItem item) async {
-    final list = await getHistory();
+    final list = List<Map<String, dynamic>>.from(_historyCache);
     list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+    _historyCache = list;
     await _prefs?.setString('history', jsonEncode(list));
   }
 
-  static Future<List<Map<String, dynamic>>> getFavorites() async {
-    final raw = _prefs?.getString('favorites');
-    if (raw == null) return [];
-    try { return List<Map<String, dynamic>>.from(jsonDecode(raw)); } catch (_) { return []; }
+  static Future<void> clearHistory() async {
+    _historyCache = <Map<String, dynamic>>[];
+    await _prefs?.remove('history');
   }
 
-  static Future<void> toggleFavorite(MediaItem item) async {
-    final list = await getFavorites();
-    final exists = list.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    if (exists) {
-      list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    } else {
-      list.insert(0, item.toMap());
+  static List<SourceDefinition> _parseSources(String jsonStr) {
+    try {
+      final list = jsonDecode(jsonStr) as List<dynamic>;
+      return list.map((e) => SourceDefinition.fromMap(e as Map<String, dynamic>)).toList();
+    } catch (_) {
+      return <SourceDefinition>[];
     }
-    await _prefs?.setString('favorites', jsonEncode(list));
   }
 
-  static Future<bool> isFavorite(MediaItem item) async {
-    final list = await getFavorites();
-    return list.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
+  static List<Map<String, dynamic>> _parseJsonList(String jsonStr) {
+    try {
+      return (jsonDecode(jsonStr) as List<dynamic>).map((e) => e as Map<String, dynamic>).toList();
+    } catch (_) {
+      return <Map<String, dynamic>>[];
+    }
   }
-
-  static Future<List<String>> getSearchHistory() async {
-    final raw = _prefs?.getString('search_history');
-    if (raw == null) return [];
-    try { return List<String>.from(jsonDecode(raw)); } catch (_) { return []; }
-  }
-
-  static Future<void> addSearchHistory(String query) async {
-    final list = await getSearchHistory();
-    list.remove(query);
-    list.insert(0, query);
-    if (list.length > 30) list.removeRange(30, list.length);
-    await _prefs?.setString('search_history', jsonEncode(list));
-  }
-
-  static Future<void> clearSearchHistory() async {
-    await _prefs?.remove('search_history');
-  }
-
-  /// 首次安装保持空白，不预置任何来源。
-  static const List<SourceDefinition> defaultSources = <SourceDefinition>[];
 }

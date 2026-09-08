@@ -5,6 +5,7 @@ import '../../l10n/app_localizations.dart';
 import '../../models/content.dart';
 import '../../providers/source_provider.dart';
 import '../../services/app_config.dart';
+import '../../services/webdav_service.dart';
 import '../../services/config_transfer_service.dart';
 
 /// Settings page with Miru-style expandable groups and runtime language support.
@@ -29,6 +30,11 @@ class _SettingsPageState extends State<SettingsPage> {
   String _proxy = '';
   String _userAgent = '';
   String _tmdbKey = '';
+  String _webdavHost = '';
+  String _webdavUsername = '';
+  String _webdavPassword = '';
+  String _webdavPath = '/';
+  bool _webdavEnabled = false;
   final List<String> _logs = <String>[];
 
   @override
@@ -39,6 +45,10 @@ class _SettingsPageState extends State<SettingsPage> {
     _themeCode = AppConfig.theme;
     _autoCheckUpdate = AppConfig.autoCheckUpdate;
     _nsfw = AppConfig.nsfw;
+    _webdavHost = AppConfig.webdavHost;
+    _webdavUsername = AppConfig.webdavUsername;
+    _webdavPath = AppConfig.webdavPath;
+    _webdavEnabled = AppConfig.webdavEnabled;
   }
 
   @override
@@ -106,6 +116,40 @@ class _SettingsPageState extends State<SettingsPage> {
                 _switchTile(s.t('saveLog'), s.t('saveLogSubtitle'), _saveLog, (value) => setState(() => _saveLog = value)),
                 _itemTile(Icons.ios_share, s.t('exportLog'), '${_logs.length}', () => _toast(s.t('exportLog'))),
                 _itemTile(Icons.delete_sweep_outlined, s.t('clearLog'), s.t('clearLog'), () { setState(() => _logs.clear()); _toast(s.t('clearLog')); }),
+              ]),
+              _group(s, Icons.cloud_outlined, 'webdav', 'webdavSubtitle', <Widget>[
+                _switchTile(s.t('webdavEnable'), s.t('webdavEnableSubtitle'), _webdavEnabled, (value) async {
+                  setState(() => _webdavEnabled = value);
+                  await AppConfig.setWebdavEnabled(value);
+                }),
+                if (_webdavEnabled) ...<Widget>[
+                  _inputTile(s.t('webdavHost'), _webdavHost.isEmpty ? s.t('notSet') : _webdavHost, () => _textDialog(s.t('webdavHost'), _webdavHost, false)),
+                  _inputTile(s.t('webdavUsername'), _webdavUsername.isEmpty ? s.t('notSet') : _webdavUsername, () => _textDialog(s.t('webdavUsername'), _webdavUsername, false)),
+                  _inputTile(s.t('webdavPassword'), s.t('passwordSet'), () => _textDialog(s.t('webdavPassword'), _webdavPassword, true)),
+                  _inputTile(s.t('webdavPath'), _webdavPath.isEmpty ? '/' : _webdavPath, () => _textDialog(s.t('webdavPath'), _webdavPath, false)),
+                  const SizedBox(height: 4),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: <Widget>[
+                      FilledButton.icon(
+                        onPressed: () => _pingWebdav(context, s),
+                        icon: const Icon(Icons.cloud_queue_outlined, size: 18),
+                        label: Text(s.t('webdavPing')),
+                      ),
+                      FilledButton.icon(
+                        onPressed: () => _backupWebdav(context, s),
+                        icon: const Icon(Icons.cloud_upload_outlined, size: 18),
+                        label: Text(s.t('webdavBackup')),
+                      ),
+                      FilledButton.icon(
+                        onPressed: () => _restoreWebdav(context, s),
+                        icon: const Icon(Icons.cloud_download_outlined, size: 18),
+                        label: Text(s.t('webdavRestore')),
+                      ),
+                    ],
+                  ),
+                ],
               ]),
               _group(s, Icons.info_outline, 'about', 'aboutSubtitle', <Widget>[
                 _itemTile(Icons.system_update, s.t('checkUpdate'), s.t('latest'), _checkUpdate),
@@ -224,6 +268,133 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _exportSources() async {
     await Clipboard.setData(ClipboardData(text: ConfigTransferService.exportSources(context.read<SourceProvider>().sources)));
     _toast('配置已复制到剪贴板');
+  }
+
+  Future<void> _pingWebdav(BuildContext context, AppStrings s) async {
+    if (_webdavHost.isEmpty) { _toast(s.t('notSet')); return; }
+    setState(() => _logs.add('${DateTime.now()}: webdav ping...'));
+    final service = WebDavService(
+      baseUrl: _webdavHost,
+      username: _webdavUsername,
+      password: _webdavPassword,
+      rootPath: _webdavPath,
+    );
+    try {
+      final ok = await service.ping();
+      if (ok) _toast(s.t('webdavConnected'));
+      else _toast(s.t('webdavError'));
+    } catch (_) {
+      _toast(s.t('webdavError'));
+    } finally {
+      setState(() => _logs.add('${DateTime.now()}: done'));
+    }
+  }
+
+  Future<void> _backupWebdav(BuildContext context, AppStrings s) async {
+    if (_webdavEnabled && _webdavHost.isEmpty) { _toast(s.t('notSet')); return; }
+    final filename = 'hongxi-backup-${DateTime.now().millisecondsSinceEpoch}.json';
+    _toast(s.t('webdavBackingUp'));
+    final service = WebDavService(
+      baseUrl: _webdavHost,
+      username: _webdavUsername,
+      password: _webdavPassword,
+      rootPath: _webdavPath,
+    );
+    final backup = BackupService(AppConfig, context.read<SourceProvider>().sources);
+    try {
+      await backup.backupTo(filename, service);
+      _toast(s.t('webdavBackupSuccess'));
+    } catch (e) {
+      _toast(e.toString());
+    }
+  }
+
+  Future<void> _restoreWebdav(BuildContext context, AppStrings s) async {
+    if (_webdavEnabled && _webdavHost.isEmpty) { _toast(s.t('notSet')); return; }
+    _dialogShowConfirmation(s.t('confirm'), s.t('webdavRestoreConfirm'), () async {
+      final filename = await _pickBackupFile(context);
+      if (filename == null) return;
+      _toast(s.t('webdavRestoring'));
+      final service = WebDavService(
+        baseUrl: _webdavHost,
+        username: _webdavUsername,
+        password: _webdavPassword,
+        rootPath: _webdavPath,
+      );
+      final backup = BackupService(AppConfig, context.read<SourceProvider>().sources);
+      try {
+        await backup.restoreFrom(filename, service);
+        _toast(s.t('webdavRestoreSuccess'));
+        // 刷新设置页
+        if (mounted) setState(() {});
+      } catch (e) {
+        _toast(e.toString());
+      }
+    });
+  }
+
+  Future<String?> _pickBackupFile(BuildContext context) async {
+    return showDialog<String?>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(AppStrings.of(AppConfig.language).t('webdavPickFile')),
+        content: SizedBox(
+          width: double.minPositive,
+          child: FutureBuilder<List<String>>(
+            future: _listBackups(),
+            builder: (_, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              final files = snapshot.data ?? <String>[];
+              if (files.isEmpty) {
+                return Text(AppStrings.of(AppConfig.language).t('webdavNoFiles'));
+              }
+              return ListView(
+                shrinkWrap: true,
+                children: files.map((f) => ListTile(
+                  title: Text(f),
+                  onTap: () => Navigator.pop<String>(ctx, f),
+                )).toList(),
+              );
+            },
+          ),
+        ),
+        actions: <Widget>[
+          TextButton(onPressed: () => Navigator.pop<String>(ctx, null), child: const Text('取消')),
+        ],
+      ),
+    );
+  }
+
+  Future<List<String>> _listBackups() async {
+    final service = WebDavService(
+      baseUrl: _webdavHost,
+      username: _webdavUsername,
+      password: _webdavPassword,
+      rootPath: _webdavPath,
+    );
+    return await service.listBackups();
+  }
+
+  Future<void> _dialogShowConfirmation(String title, String message, VoidCallback onConfirm) async {
+    showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(title),
+        content: Text(message),
+        actions: <Widget>[
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              onConfirm();
+            },
+            child: const Text('确定'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _testNetwork() async {

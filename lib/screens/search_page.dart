@@ -122,18 +122,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     return ListView(
       padding: const EdgeInsets.all(20),
       children: <Widget>[
-        SegmentedButton<SearchMode>(
-          segments: const <ButtonSegment<SearchMode>>[
-            ButtonSegment(value: SearchMode.aggregate, label: Text('聚合')),
-            ButtonSegment(value: SearchMode.video, label: Text('视频')),
-            ButtonSegment(value: SearchMode.comic, label: Text('漫画')),
-            ButtonSegment(value: SearchMode.novel, label: Text('小说')),
-            ButtonSegment(value: SearchMode.music, label: Text('音乐')),
-          ],
-          selected: <SearchMode>{_mode},
-          onSelectionChanged: (value) => setState(() => _mode = value.first),
-        ),
-        const SizedBox(height: 28),
+
         if (_history.isNotEmpty) ...<Widget>[
           const Text('搜索历史', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           const SizedBox(height: 10),
@@ -151,7 +140,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
           const SizedBox(height: 28),
         ],
         Text(
-          _mode == SearchMode.aggregate ? '聚合搜索所有已启用的扩展源。' : '当前只搜索${_mode.label.replaceAll('只搜', '')}。',
+          '搜索视频、漫画、小说、音乐',
           style: TextStyle(color: Colors.grey[600]),
         ),
       ],
