@@ -5,33 +5,50 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
-  build:
+  build-android:
     runs-on: ubuntu-latest
     timeout-minutes: 120
-    
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Setup Flutter 3.10
-        uses: subosito/flutter-action@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter 3.16
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.10.6'
+          flutter-version: '3.16.0'
           channel: 'stable'
-      
-      - run: flutter pub get
-      
-      - run: flutter build apk --debug --verbose
-        id: build
-        continue-on-error: true
-      
-      - name: Check output
+          cache: true
+
+      - name: Show environment
         run: |
-          ls -la build/app/outputs/flutter-apk/ || echo "Build output missing"
-          cat build.log 2>/dev/null || echo "No build log"
-      
-      - uses: actions/upload-artifact@v4
+          flutter --version
+          dart --version
+          echo "SDK: $ANDROID_HOME"
+          ls -la
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK (debug)
+        run: flutter build apk --debug
+
+      - name: Verify APK
+        run: |
+          echo "Build output:"
+          ls -la build/app/outputs/flutter-apk/
+          echo "APK file:"
+          ls -lh build/app/outputs/flutter-apk/app-debug.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
-          name: app
+          name: allplay-debug-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: warn
+          if-no-files-found: error
+          retention-days: 14
