@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:hongxi/models/content.dart';
-import 'package:hongxi/services/app_config.dart';
+import 'package:allplay/models/content.dart';
+import 'package:allplay/services/app_config.dart';
 
 class PlayerPage extends StatefulWidget {
   final MediaItem item;

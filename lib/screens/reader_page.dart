@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hongxi/models/content.dart';
-import 'package:hongxi/providers/source_provider.dart';
+import 'package:allplay/models/content.dart';
+import 'package:allplay/providers/source_provider.dart';
 
 class ReaderPage extends StatefulWidget {
   final MediaItem item;

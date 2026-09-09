@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:hongxi/models/content.dart';
-import 'package:hongxi/providers/source_provider.dart';
-import 'package:hongxi/services/app_config.dart';
+import 'package:allplay/models/content.dart';
+import 'package:allplay/providers/source_provider.dart';
+import 'package:allplay/services/app_config.dart';
 import 'player_page.dart';
 import 'reader_page.dart';
 import 'music_player_page.dart';
