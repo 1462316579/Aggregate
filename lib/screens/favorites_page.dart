@@ -48,7 +48,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
   Future<void> _loadFavorites() async {
     final list = await AppConfig.getFavorites();
     setState(() {
-      _items = list.map((e) => MediaItem.fromMap(Map<String, dynamic>.from(e))).toList();
+      _items = list.map((e) => MediaItem.fromMap(Map<String, dynamic>.from(e), e['sourceId']?.toString() ?? '', ContentType.values.firstWhere((x) => x.name == (e['type']?.toString() ?? 'video'), orElse: () => ContentType.video))).toList();
       _loading = false;
     });
   }

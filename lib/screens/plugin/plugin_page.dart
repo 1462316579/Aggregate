@@ -411,17 +411,45 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
 
   Future<void> _openAiChat() async {
     final plugin = _buildPlugin();
-    final context = '''插件名称: ${plugin.name}
+    final promptContext = '''插件名称: ${plugin.name}
 插件语言: ${plugin.language.name}
 插件代码:
 ${plugin.code}''';
 
-    final systemPrompt = AIService.getSystemPrompt(context);
+    final systemPrompt = AIService.getSystemPrompt(promptContext);
     final result = await showDialog<String>(
       context: context,
-      builder: (_) => _AiChatDialog(
-        systemPrompt: systemPrompt,
-        initialCode: plugin.code,
+      builder: (_) => AlertDialog(
+        title: const Text('AI Chat'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(systemPrompt),
+              const SizedBox(height: 16),
+              TextField(
+                maxLines: 10,
+                controller: TextEditingController(text: plugin.code),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Plugin code...',
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(null),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(plugin.code);
+            },
+            child: const Text('OK'),
+          ),
+        ],
       ),
     );
 

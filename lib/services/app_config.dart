@@ -168,8 +168,7 @@ class AppConfig {
 
   static void addSearchHistory(String value) {
     if (value.isEmpty) return;
-    _searchHistoryCache = [_searchHistoryCache.where((s) => s != value).toList(), value]
-        .expand((e) => e).toList();
+    _searchHistoryCache = List.from(_searchHistoryCache.where((s) => s != value)) + [value];
     if (_searchHistoryCache.length > 20) {
       _searchHistoryCache = _searchHistoryCache.sublist(0, 20);
     }
@@ -257,6 +256,11 @@ class AppConfig {
   static Future<void> setHistory(List<Map<String, dynamic>> items) async {
     _historyCache = items;
     await _prefs?.setString('history', jsonEncode(items));
+  }
+
+  static Future<void> saveHistory(List<MediaItem> items) async {
+    final maps = items.map((e) => e.toMap()).toList();
+    await setHistory(maps);
   }
 
   static List<SourceDefinition> _parseSources(String jsonStr) {

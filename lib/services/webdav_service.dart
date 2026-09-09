@@ -8,7 +8,7 @@ import '../providers/source_provider.dart';
 /// WebDAV 备份服务 —— 兼容常见 WebDAV 服务器
 /// (Nextcloud、Filebrowser、Seafile、坚果云、Alist、FastDFS 等)。
 class WebDavService {
-  WebDavService({this.baseUrl, this.username, this.password, this.rootPath = '/'});
+  WebDavService({this.baseUrl = '', this.username, this.password, this.rootPath = '/'});
 
   /// 例：https://cloud.example.com 或 http://192.168.1.100:8080
   final String baseUrl;

@@ -108,7 +108,7 @@ class SourceProvider extends ChangeNotifier {
   }
 
   Future<List<String>> searchHistory() => AppConfig.getSearchHistory();
-  Future<void> addSearchHistory(String value) => AppConfig.addSearchHistory(value);
+  void addSearchHistory(String value) { AppConfig.addSearchHistory(value); }
 }
 
 class LocalShelf {
