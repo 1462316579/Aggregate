@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/plugin.dart';
 import '../../services/plugin_service.dart';
+import '../../services/ai_service.dart';
+import '../../l10n/app_localizations.dart';
 
 class PluginPage extends StatefulWidget {
   const PluginPage({super.key});
@@ -84,7 +86,7 @@ class _PluginPageState extends State<PluginPage> with SingleTickerProviderStateM
       return _emptyState(
         icon: Icons.extension_off,
         title: '暂无插件',
-        message: '插件可以为视频、漫画和小说提供扩展源。',
+        message: '',
         action: '新建插件',
         onPressed: () => _openEditor(),
       );
@@ -93,12 +95,6 @@ class _PluginPageState extends State<PluginPage> with SingleTickerProviderStateM
     return ListView(
       padding: const EdgeInsets.all(12),
       children: <Widget>[
-        _infoCard(
-          Icons.extension,
-          '扩展源系统',
-          '插件通过统一协议返回搜索、详情、分类和播放数据。JavaScript 可直接调试，其他语言可以先保存源码。',
-        ),
-        const SizedBox(height: 8),
         ..._plugins.map(_pluginTile),
       ],
     );
@@ -140,69 +136,9 @@ class _PluginPageState extends State<PluginPage> with SingleTickerProviderStateM
   }
 
   Widget _repositoryTab() {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: <Widget>[
-        _infoCard(
-          Icons.cloud_download,
-          '扩展仓库',
-          '添加公开 JSON 仓库，仓库可以返回插件数组，也可以使用 {"plugins": [...]} 格式。',
-        ),
-        const SizedBox(height: 16),
-        TextField(
-          controller: _repositoryController,
-          keyboardType: TextInputType.url,
-          decoration: const InputDecoration(
-            labelText: '仓库 URL',
-            hintText: 'https://example.com/plugins.json',
-            prefixIcon: Icon(Icons.link),
-            border: OutlineInputBorder(),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Row(
-          children: <Widget>[
-            Expanded(
-              child: FilledButton.icon(
-                icon: const Icon(Icons.download),
-                label: const Text('加载并安装'),
-                onPressed: _installRepository,
-              ),
-            ),
-            const SizedBox(width: 10),
-            OutlinedButton(
-              onPressed: _saveRepository,
-              child: const Text('保存地址'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 24),
-        const Text('已保存仓库', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        if (_repositories.isEmpty)
-          Text('暂无仓库', style: TextStyle(color: Colors.grey[600]))
-        else
-          ..._repositories.map((url) => Card(
-            child: ListTile(
-              leading: const Icon(Icons.cloud_queue),
-              title: Text(url, maxLines: 2, overflow: TextOverflow.ellipsis),
-              onTap: () {
-                _repositoryController.text = url;
-                _installRepository();
-              },
-              trailing: IconButton(
-                tooltip: '删除仓库',
-                icon: const Icon(Icons.delete_outline),
-                onPressed: () async {
-                  await PluginService.removeRepository(url);
-                  _load();
-                },
-              ),
-            ),
-          )),
-        const SizedBox(height: 24),
-      ],
-    );
+    // 只显示已安装的插件，不显示配置框
+    // 仓库管理已移至设置页面
+    return _installedTab();
   }
 
   Widget _debugTab() {
@@ -219,8 +155,6 @@ class _PluginPageState extends State<PluginPage> with SingleTickerProviderStateM
     return ListView(
       padding: const EdgeInsets.all(12),
       children: <Widget>[
-        _infoCard(Icons.bug_report, '插件调试', '运行结构检查并查看统一协议提示。'),
-        const SizedBox(height: 8),
         ..._plugins.map((plugin) => Card(
           child: ListTile(
             leading: Icon(Icons.code, color: _languageColor(plugin.language)),
@@ -412,6 +346,11 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
               child: Text(language.name),
             )).toList(),
           ),
+          IconButton(
+            tooltip: 'AI 聊天',
+            icon: const Icon(Icons.chat),
+            onPressed: _openAiChat,
+          ),
           IconButton(tooltip: '调试', icon: const Icon(Icons.bug_report), onPressed: _test),
           IconButton(
             tooltip: '保存',
@@ -470,6 +409,30 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
     });
   }
 
+  Future<void> _openAiChat() async {
+    final plugin = _buildPlugin();
+    final context = '''插件名称: ${plugin.name}
+插件语言: ${plugin.language.name}
+插件代码:
+${plugin.code}''';
+
+    final systemPrompt = AIService.getSystemPrompt(context);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (_) => _AiChatDialog(
+        systemPrompt: systemPrompt,
+        initialCode: plugin.code,
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      setState(() {
+        _code.text = result;
+        _changed = true;
+      });
+    }
+  }
+
   Future<void> _test() async {
     final result = await PluginService.runTest(_buildPlugin());
     if (!mounted) return;
@@ -501,7 +464,7 @@ class _PluginEditorPageState extends State<PluginEditorPage> {
   String _template(PluginLanguage language) {
     switch (language) {
       case PluginLanguage.javascript:
-        return '''// 宏曦聚合 / Miru 扩展协议
+        return '''// 扩展插件模板
 // 返回格式: {"list":[{"id":"1","title":"名称","cover":"图片"}]}
 async function search(keyword, page) {
   return JSON.stringify({list: []});
@@ -520,7 +483,7 @@ async function test() {
 }
 ''';
       case PluginLanguage.python:
-        return '''# Miru-compatible plugin
+        return '''# 扩展插件模板
 import json
 
 def search(keyword, page=1):

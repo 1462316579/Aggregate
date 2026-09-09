@@ -7,13 +7,13 @@ import '../models/content.dart';
 /// user-configurable BT-server settings.
 class AppServices {
   final BuiltInBtServer btServer;
-  late final EsoMcpService mcpServer;
+  late final PluginMcpService mcpServer;
 
   AppServices({
     BuiltInBtServer? btServer,
     List<SourceDefinition> Function()? sourceReader,
   }) : btServer = btServer ?? BuiltInBtServer() {
-    mcpServer = EsoMcpService(
+    mcpServer = PluginMcpService(
       sourceService: const SourceService(),
       btServer: this.btServer,
       sources: sourceReader ?? () => const <SourceDefinition>[],

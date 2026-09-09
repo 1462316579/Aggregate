@@ -4,7 +4,7 @@ import 'package:hongxi/models/content.dart';
 import '../providers/source_provider.dart';
 import 'detail_page.dart';
 
-/// Miru 风格搜索：聚合搜索或按内容类型筛选，不提供指定源搜索。
+/// 聚合搜索页面：支持聚合搜索或按内容类型筛选，不提供指定源搜索。
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
   @override

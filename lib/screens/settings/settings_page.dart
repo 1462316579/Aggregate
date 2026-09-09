@@ -8,7 +8,7 @@ import '../../services/app_config.dart';
 import '../../services/webdav_service.dart';
 import '../../services/config_transfer_service.dart';
 
-/// Settings page with Miru-style expandable groups and runtime language support.
+/// Settings page with expandable groups and runtime language support.
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -39,6 +39,7 @@ class _SettingsPageState extends State<SettingsPage> {
   String _aiApiUrl = '';
   String _aiApiKey = '';
   String _aiModel = 'gpt-3.5-turbo';
+  String _pluginRepositoryUrl = '';
   final List<String> _logs = <String>[];
 
   @override
@@ -57,6 +58,7 @@ class _SettingsPageState extends State<SettingsPage> {
     _aiApiUrl = AppConfig.aiApiUrl;
     _aiApiKey = AppConfig.aiApiKey;
     _aiModel = AppConfig.aiModel;
+    _pluginRepositoryUrl = AppConfig.pluginRepositoryUrl;
   }
 
   @override
@@ -167,6 +169,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   'gpt-3.5-turbo': s.t('gpt-3.5-turbo'), 'gpt-4': s.t('gpt-4'), 'gpt-4o': s.t('gpt-4o'),
                 }),
               ]),
+              _group(s, Icons.extension, 'plugin', 'pluginSubtitle', <Widget>[
+                _inputTile(s.t('pluginRepositoryUrl'), _pluginRepositoryUrl.isEmpty ? s.t('notSet') : _pluginRepositoryUrl, () async {
+                  await _textDialog(s.t('pluginRepositoryUrl'), _pluginRepositoryUrl, false);
+                  if (mounted) setState(() {});
+                }),
+              ]),
               _group(s, Icons.info_outline, 'about', 'aboutSubtitle', <Widget>[
                 _itemTile(Icons.system_update, s.t('checkUpdate'), s.t('latest'), _checkUpdate),
               ], initiallyExpanded: true),
@@ -264,7 +272,21 @@ class _SettingsPageState extends State<SettingsPage> {
       title: Text(title), content: TextField(controller: controller),
       actions: <Widget>[
         TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('取消')),
-        FilledButton(onPressed: () { setState(() { if (saveProxy) _proxy = controller.text.trim(); else _userAgent = controller.text.trim(); }); Navigator.pop(ctx); }, child: const Text('保存')),
+        FilledButton(onPressed: () async {
+          final text = controller.text.trim();
+          setState(() {
+            // 根据标题判断保存位置
+            if (title == AppStrings.of(AppConfig.language).t('pluginRepositoryUrl')) {
+              _pluginRepositoryUrl = text;
+              await AppConfig.setPluginRepositoryUrl(text);
+            } else if (saveProxy) {
+              _proxy = text;
+            } else {
+              _userAgent = text;
+            }
+          });
+          Navigator.pop(ctx);
+        }, child: const Text('保存')),
       ],
     ));
   }

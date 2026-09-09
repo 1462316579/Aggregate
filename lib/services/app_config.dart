@@ -132,6 +132,18 @@ class AppConfig {
     await _prefs?.setString('aiModel', value);
   }
 
+  // Plugin repository URL setting
+  static String pluginRepositoryUrl = '';
+  static Future<void> setPluginRepositoryUrl(String value) async {
+    pluginRepositoryUrl = value;
+    await _prefs?.setString('pluginRepositoryUrl', value);
+  }
+
+  static Future<String> getPluginRepositoryUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('pluginRepositoryUrl') ?? '';
+  }
+
   static List<SourceDefinition> get sources => _sourcesCache;
   static List<Map<String, dynamic>> get favorites => _favoritesCache;
   static List<Map<String, dynamic>> get history => _historyCache;

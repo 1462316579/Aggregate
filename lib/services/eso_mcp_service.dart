@@ -5,18 +5,17 @@ import '../models/content.dart';
 import 'builtin_bt_server.dart';
 import 'source_service.dart';
 
-/// Local MCP-compatible JSON-RPC service inspired by eso's multi-source tools.
+/// Local JSON-RPC service for multi-source tools.
 ///
-/// The eso repository itself does not contain a module named MCP. This is an
-/// app-owned compatibility layer exposing the same useful operations as MCP
-/// tools: source discovery, search, detail, music resolution and BT status.
-class EsoMcpService {
+/// App-owned service exposing useful operations as MCP tools:
+/// source discovery, search, detail, music resolution and BT status.
+class PluginMcpService {
   final SourceService sourceService;
   final BuiltInBtServer btServer;
   final List<SourceDefinition> Function() sources;
   io.HttpServer? _server;
 
-  EsoMcpService({
+  PluginMcpService({
     required this.sourceService,
     required this.btServer,
     required this.sources,
@@ -66,7 +65,7 @@ class EsoMcpService {
     if (method == 'initialize') {
       return _result(id, <String, dynamic>{
         'protocolVersion': '2024-11-05',
-        'serverInfo': <String, dynamic>{'name': 'hongxi-eso-mcp', 'version': '1.0.0'},
+        'serverInfo': <String, dynamic>{'name': 'hongxi-mcp', 'version': '1.0.0'},
         'capabilities': <String, dynamic>{'tools': <String, dynamic>{}},
       });
     }
