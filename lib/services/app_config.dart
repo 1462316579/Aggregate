@@ -265,7 +265,7 @@ class AppConfig {
 
   static List<SourceDefinition> _parseSources(String jsonStr) {
     try {
-      final list = jsonDecode(jsonStr) as List<dynamic>;
+      final list = (jsonDecode(jsonStr) as List).cast<Map<String, dynamic>>();
       return list.map((e) => SourceDefinition.fromMap(e as Map<String, dynamic>)).toList();
     } catch (_) {
       return <SourceDefinition>[];
