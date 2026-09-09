@@ -176,7 +176,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 }),
               ]),
               _group(s, Icons.info_outline, 'about', 'aboutSubtitle', <Widget>[
-                _itemTile(Icons.system_update, s.t('checkUpdate'), s.t('latest'), _checkUpdate),
+                _itemTile(Icons.system_update, s.t('checkUpdate'), s.t('latest'), () => _checkUpdate()),
               ], initiallyExpanded: true),
               const SizedBox(height: 24),
             ],
@@ -338,7 +338,7 @@ class _SettingsPageState extends State<SettingsPage> {
       password: _webdavPassword,
       rootPath: _webdavPath,
     );
-    final backup = BackupService(AppConfig, context.read<SourceProvider>().sources);
+    final backup = BackupService(AppConfig(), context.read<SourceProvider>().sources);
     try {
       await backup.backupTo(filename, service);
       _toast(s.t('webdavBackupSuccess'));
@@ -359,7 +359,7 @@ class _SettingsPageState extends State<SettingsPage> {
         password: _webdavPassword,
         rootPath: _webdavPath,
       );
-      final backup = BackupService(AppConfig, context.read<SourceProvider>().sources);
+      final backup = BackupService(AppConfig(), context.read<SourceProvider>().sources);
       try {
         await backup.restoreFrom(filename, service);
         _toast(s.t('webdavRestoreSuccess'));

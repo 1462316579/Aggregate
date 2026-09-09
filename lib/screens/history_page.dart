@@ -47,7 +47,7 @@ class _HistoryPageState extends State<HistoryPage> with SingleTickerProviderStat
   Future<void> _loadHistory() async {
     final list = await AppConfig.getHistory();
     setState(() {
-      _items = list.map((e) => MediaItem.fromMap(Map<String, dynamic>.from(e))).toList();
+      _items = list.map((e) => MediaItem.fromMap(Map<String, dynamic>.from(e), e['sourceId']?.toString() ?? '', ContentType.values.firstWhere((x) => x.name == (e['type']?.toString() ?? 'video'), orElse: () => ContentType.video))).toList();
       _loading = false;
     });
   }
@@ -55,7 +55,7 @@ class _HistoryPageState extends State<HistoryPage> with SingleTickerProviderStat
   Future<void> _removeHistory(MediaItem item) async {
     final updated = _items.where((e) => e.id != item.id || e.sourceId != item.sourceId).toList();
     // Save remaining history
-    await AppConfig.prefs?.setString('history', jsonEncode(updated.map((e) => e.toMap()).toList()));
+    await AppConfig.saveHistory(updated);
     setState(() => _items = updated);
   }
 

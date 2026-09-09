@@ -8,6 +8,7 @@ class MediaItem {
   final String cover;
   final String description;
   final String sourceId;
+  final String? sourceName;
   final ContentType type;
   final String? remark;
   final String? author;
