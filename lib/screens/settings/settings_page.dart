@@ -212,9 +212,9 @@ class _SettingsPageState extends State<SettingsPage> {
     title: Text(title), subtitle: Text(subtitle), value: value, onChanged: onChanged,
   );
 
-  Widget _asyncInputTile(String title, String subtitle, {required bool saveProxy}) => ListTile(
+  Widget _asyncInputTile(String title, String subtitle, VoidCallback onTap) => ListTile(
     title: Text(title), subtitle: Text(subtitle), trailing: const Icon(Icons.chevron_right),
-    onTap: () => _textDialog(title, subtitle, saveProxy),
+    onTap: onTap,
   );
 
   Widget _radioTile(String title, String current, List<String> values, ValueChanged<String> onChanged, {Map<String, String>? labels}) => ListTile(
