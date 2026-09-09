@@ -73,7 +73,7 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             children: <Widget>[
               _group(s, Icons.tune, 'general', 'generalSubtitle', <Widget>[
-                _inputTile(s.t('tmdbKey'), _maskedKey(s), () => _tmdbDialog(context, s)),
+                _asyncInputTile(s.t('tmdbKey'), _maskedKey(s), () => _tmdbDialog(context, s)),
                 _radioTile(s.t('language'), _languageLabel(s), _languageOptions().keys.toList(), (value) async {
                   setState(() => _languageCode = value);
                   await AppConfig.setLanguage(value);
@@ -115,11 +115,11 @@ class _SettingsPageState extends State<SettingsPage> {
                 }),
               ]),
               _group(s, Icons.network_check, 'network', 'networkSubtitle', <Widget>[
-                _inputTile(s.t('userAgent'), _userAgent.isEmpty ? s.t('defaultSystem') : _userAgent, () => _textDialog(s.t('userAgent'), _userAgent, false)),
+                _asyncInputTile(s.t('userAgent'), _userAgent.isEmpty ? s.t('defaultSystem') : _userAgent, () => _textDialog(s.t('userAgent'), _userAgent, false)),
                 _radioTile(s.t('proxyType'), _proxyTypeLabel(s), <String>['DIRECT', 'HTTP', 'SOCKS4', 'SOCKS5'], (value) => setState(() => _proxyType = value), labels: <String, String>{
                   'DIRECT': s.t('direct'), 'HTTP': s.t('http'), 'SOCKS4': s.t('socks4'), 'SOCKS5': s.t('socks5'),
                 }),
-                _inputTile(s.t('proxyAddress'), _proxy.isEmpty ? s.t('notSet') : _proxy, () => _textDialog(s.t('proxyAddress'), _proxy, true)),
+                _asyncInputTile(s.t('proxyAddress'), _proxy.isEmpty ? s.t('notSet') : _proxy, () => _textDialog(s.t('proxyAddress'), _proxy, true)),
                 _itemTile(Icons.dns_outlined, s.t('connectionTest'), s.t('connectionTestSubtitle'), _testNetwork),
               ]),
               _group(s, Icons.article_outlined, 'logs', 'logsSubtitle', <Widget>[
@@ -133,10 +133,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   await AppConfig.setWebdavEnabled(value);
                 }),
                 if (_webdavEnabled) ...<Widget>[
-                  _inputTile(s.t('webdavHost'), _webdavHost.isEmpty ? s.t('notSet') : _webdavHost, () => _textDialog(s.t('webdavHost'), _webdavHost, false)),
-                  _inputTile(s.t('webdavUsername'), _webdavUsername.isEmpty ? s.t('notSet') : _webdavUsername, () => _textDialog(s.t('webdavUsername'), _webdavUsername, false)),
-                  _inputTile(s.t('webdavPassword'), s.t('passwordSet'), () => _textDialog(s.t('webdavPassword'), _webdavPassword, true)),
-                  _inputTile(s.t('webdavPath'), _webdavPath.isEmpty ? '/' : _webdavPath, () => _textDialog(s.t('webdavPath'), _webdavPath, false)),
+                  _asyncInputTile(s.t('webdavHost'), _webdavHost.isEmpty ? s.t('notSet') : _webdavHost, () => _textDialog(s.t('webdavHost'), _webdavHost, false)),
+                  _asyncInputTile(s.t('webdavUsername'), _webdavUsername.isEmpty ? s.t('notSet') : _webdavUsername, () => _textDialog(s.t('webdavUsername'), _webdavUsername, false)),
+                  _asyncInputTile(s.t('webdavPassword'), s.t('passwordSet'), () => _textDialog(s.t('webdavPassword'), _webdavPassword, true)),
+                  _asyncInputTile(s.t('webdavPath'), _webdavPath.isEmpty ? '/' : _webdavPath, () => _textDialog(s.t('webdavPath'), _webdavPath, false)),
                   const SizedBox(height: 4),
                   Wrap(
                     spacing: 8,
@@ -162,15 +162,15 @@ class _SettingsPageState extends State<SettingsPage> {
                 ],
               ]),
               _group(s, Icons.psychology_outlined, 'ai', 'aiSubtitle', <Widget>[
-                _inputTile(s.t('aiConfigName'), _aiConfigName.isEmpty ? s.t('notSet') : _aiConfigName, () => _textDialog(s.t('aiConfigName'), _aiConfigName, false)),
-                _inputTile(s.t('aiApiUrl'), _aiApiUrl.isEmpty ? s.t('notSet') : _aiApiUrl, () => _textDialog(s.t('aiApiUrl'), _aiApiUrl, false)),
-                _inputTile(s.t('aiApiKey'), s.t('passwordSet'), () => _textDialog(s.t('aiApiKey'), _aiApiKey, true)),
+                _asyncInputTile(s.t('aiConfigName'), _aiConfigName.isEmpty ? s.t('notSet') : _aiConfigName, () => _textDialog(s.t('aiConfigName'), _aiConfigName, false)),
+                _asyncInputTile(s.t('aiApiUrl'), _aiApiUrl.isEmpty ? s.t('notSet') : _aiApiUrl, () => _textDialog(s.t('aiApiUrl'), _aiApiUrl, false)),
+                _asyncInputTile(s.t('aiApiKey'), s.t('passwordSet'), () => _textDialog(s.t('aiApiKey'), _aiApiKey, true)),
                 _radioTile(s.t('aiModel'), _aiModel, <String>['gpt-3.5-turbo', 'gpt-4', 'gpt-4o'], (value) => setState(() => _aiModel = value), labels: <String, String>{
                   'gpt-3.5-turbo': s.t('gpt-3.5-turbo'), 'gpt-4': s.t('gpt-4'), 'gpt-4o': s.t('gpt-4o'),
                 }),
               ]),
               _group(s, Icons.extension, 'plugin', 'pluginSubtitle', <Widget>[
-                _inputTile(s.t('pluginRepositoryUrl'), _pluginRepositoryUrl.isEmpty ? s.t('notSet') : _pluginRepositoryUrl, () async {
+                _asyncInputTile(s.t('pluginRepositoryUrl'), _pluginRepositoryUrl.isEmpty ? s.t('notSet') : _pluginRepositoryUrl, () async {
                   await _textDialog(s.t('pluginRepositoryUrl'), _pluginRepositoryUrl, false);
                   if (mounted) setState(() {});
                 }),
@@ -212,8 +212,14 @@ class _SettingsPageState extends State<SettingsPage> {
     title: Text(title), subtitle: Text(subtitle), value: value, onChanged: onChanged,
   );
 
-  Widget _inputTile(String title, String subtitle, VoidCallback onTap) => ListTile(
+  Widget _asyncInputTile(String title, String subtitle, VoidCallback onTap) => ListTile(
     title: Text(title), subtitle: Text(subtitle), trailing: const Icon(Icons.chevron_right), onTap: onTap,
+  );
+  
+  // Async version of _inputTile for _textDialog
+  Widget _asyncInputTile(String title, String subtitle, {required bool saveProxy}) => ListTile(
+    title: Text(title), subtitle: Text(subtitle), trailing: const Icon(Icons.chevron_right),
+    onTap: () async => await _textDialog(title, subtitle, saveProxy),
   );
 
   Widget _radioTile(String title, String current, List<String> values, ValueChanged<String> onChanged, {Map<String, String>? labels}) => ListTile(

@@ -168,7 +168,7 @@ class AppConfig {
 
   static void addSearchHistory(String value) {
     if (value.isEmpty) return;
-    _searchHistoryCache = List.from(_searchHistoryCache.where((s) => s != value)) + [value];
+    _searchHistoryCache = _searchHistoryCache.where((String s) => s != value).toList(growable: true)..insert(0, value);
     if (_searchHistoryCache.length > 20) {
       _searchHistoryCache = _searchHistoryCache.sublist(0, 20);
     }

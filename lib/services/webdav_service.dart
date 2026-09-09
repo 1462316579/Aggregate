@@ -148,7 +148,7 @@ class WebDavService {
       final dirParts = dir.split('/').where((e) => e.isNotEmpty).toList();
       if (href.endsWith('/')) continue;
       if (parts.length == dirParts.length + 1 &&
-          dirParts.every((p, i) => p == parts[i])) {
+          dirParts.asMap().every((i, p) => p == parts[i])) {
         result.add(parts.last);
       }
     }
