@@ -1,2 +1,25 @@
-[CONTEXT OFFLOADED] Content (~471 tokens, 1156 bytes) saved to: /var/minis/offloads/tools/file_write_b89b91c.txt
-Use file_read tool to retrieve if needed.
+name: allplay
+description: AllPlay - a video player aggregator app
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.16.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  provider: ^6.1.2
+  http: ^1.2.0
+  shared_preferences: ^2.2.0
+  video_player: ^2.8.0
+  intl: ^0.18.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
