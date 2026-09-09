@@ -161,7 +161,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   ),
                 ],
               ]),
-              _group(s, Icons.brain_outlined, 'ai', 'aiSubtitle', <Widget>[
+              _group(s, Icons.psychology_outlined, 'ai', 'aiSubtitle', <Widget>[
                 _inputTile(s.t('aiConfigName'), _aiConfigName.isEmpty ? s.t('notSet') : _aiConfigName, () => _textDialog(s.t('aiConfigName'), _aiConfigName, false)),
                 _inputTile(s.t('aiApiUrl'), _aiApiUrl.isEmpty ? s.t('notSet') : _aiApiUrl, () => _textDialog(s.t('aiApiUrl'), _aiApiUrl, false)),
                 _inputTile(s.t('aiApiKey'), s.t('passwordSet'), () => _textDialog(s.t('aiApiKey'), _aiApiKey, true)),

@@ -55,7 +55,7 @@ class _HistoryPageState extends State<HistoryPage> with SingleTickerProviderStat
   Future<void> _removeHistory(MediaItem item) async {
     final updated = _items.where((e) => e.id != item.id || e.sourceId != item.sourceId).toList();
     // Save remaining history
-    await AppConfig._prefs?.setString('history', jsonEncode(updated.map((e) => e.toMap()).toList()));
+    await AppConfig.prefs?.setString('history', jsonEncode(updated.map((e) => e.toMap()).toList()));
     setState(() => _items = updated);
   }
 
@@ -110,7 +110,7 @@ class _HistoryPageState extends State<HistoryPage> with SingleTickerProviderStat
           controller: _tabController,
           tabs: <Tab>[
             Tab(icon: const Icon(Icons.videocam), text: s.t('video')),
-            Tab(icon: const Icon(Icons.comics), text: s.t('comic')),
+            Tab(icon: const Icon(Icons.menu_book), text: s.t('comic')),
             Tab(icon: const Icon(Icons.menu_book), text: s.t('novel')),
             Tab(icon: const Icon(Icons.music_note), text: s.t('music')),
           ],

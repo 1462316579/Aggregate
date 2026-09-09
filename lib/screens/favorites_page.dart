@@ -68,7 +68,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               _categoryTile(Icons.videocam, s.t('video'), 'video'),
-              _categoryTile(Icons.comics, s.t('comic'), 'comic'),
+              _categoryTile(Icons.menu_book, s.t('comic'), 'comic'),
               _categoryTile(Icons.menu_book, s.t('novel'), 'novel'),
               _categoryTile(Icons.music_note, s.t('music'), 'music'),
             ],
@@ -145,7 +145,7 @@ class _FavoritesPageState extends State<FavoritesPage> with SingleTickerProvider
           controller: _tabController,
           tabs: <Tab>[
             Tab(icon: const Icon(Icons.videocam), text: s.t('video')),
-            Tab(icon: const Icon(Icons.comics), text: s.t('comic')),
+            Tab(icon: const Icon(Icons.menu_book), text: s.t('comic')),
             Tab(icon: const Icon(Icons.menu_book), text: s.t('novel')),
             Tab(icon: const Icon(Icons.music_note), text: s.t('music')),
           ],
