@@ -17,8 +17,8 @@ class WebDavService {
   final String rootPath;
 
   static WebDavService? fromConfig(AppConfig config) {
-    if (config.webdavEnabled != true) return null;
-    final url = config.webdavHost.trim();
+    if (AppConfig.webdavEnabled != true) return null;
+    final url = AppConfig.webdavHost.trim();
     if (url.isEmpty) return null;
     var host = url;
     if (!RegExp(r'^https?://').hasMatch(host)) {
@@ -26,9 +26,9 @@ class WebDavService {
     }
     return WebDavService(
       baseUrl: host,
-      username: config.webdavUsername,
-      password: config.webdavPassword,
-      rootPath: config.webdavPath.isEmpty ? '/' : config.webdavPath,
+      username: AppConfig.webdavUsername,
+      password: AppConfig.webdavPassword,
+      rootPath: AppConfig.webdavPath.isEmpty ? '/' : AppConfig.webdavPath,
     );
   }
 
