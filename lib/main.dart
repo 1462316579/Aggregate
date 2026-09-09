@@ -1,86 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:media_kit/media_kit.dart';
 import 'providers/source_provider.dart';
-import 'screens/main_page.dart';
+import 'providers/player_provider.dart';
 import 'services/app_config.dart';
-import 'services/app_services.dart';
 import 'services/music_player_service.dart';
-import 'l10n/app_localizations.dart';
+import 'screens/home/home_screen.dart';
 
-Future<void> main() async {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await AppConfig.init().timeout(const Duration(seconds: 5));
-    await AppConfig.getSources().timeout(const Duration(seconds: 5));
-  } catch (_) {}
+  MediaKit.ensureInitialized();
 
-  final appServices = AppServices(sourceReader: () => AppConfig.cachedSources);
-  runApp(HongXiApp(appServices: appServices));
-  Future<void>(() async {
-    try {
-      await appServices.startBuiltInServices();
-    } catch (_) {}
-  });
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+  ));
+
+  await AppConfig.init();
+  runApp(const AllPlayApp());
 }
 
-class HongXiApp extends StatelessWidget {
-  final AppServices appServices;
-  const HongXiApp({super.key, required this.appServices});
+class AllPlayApp extends StatelessWidget {
+  const AllPlayApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: AppConfig.themeNotifier,
-      builder: (context, theme, _) => ValueListenableBuilder<String>(
-        valueListenable: AppConfig.languageNotifier,
-        builder: (context, language, _) {
-          final strings = AppStrings.of(language);
-          return MultiProvider(
-            providers: [
-              ChangeNotifierProvider<SourceProvider>(create: (_) => SourceProvider()..init()),
-              ChangeNotifierProvider<MusicPlayerService>(create: (_) => MusicPlayerService()),
-              Provider<AppServices>.value(value: appServices),
-            ],
-            child: MaterialApp(
-              title: '宏曦聚合',
-              debugShowCheckedModeBanner: false,
-              locale: strings.locale,
-              supportedLocales: AppStrings.supportedCodes.map((code) => AppStrings.of(code).locale).toList(),
-              localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-                GlobalMaterialLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-              ],
-              themeMode: _themeMode(theme),
-              theme: _buildTheme(Brightness.light),
-              darkTheme: _buildTheme(Brightness.dark),
-              home: const MainPage(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => SourceProvider()..init()),
+        ChangeNotifierProvider(create: (_) => PlayerProvider()),
+        ChangeNotifierProvider(create: (_) => MusicPlayerService()),
+      ],
+      child: MaterialApp(
+        title: 'AllPlay',
+        debugShowCheckedModeBanner: false,
+        // 亦搜风格 — 浅色主题
+        theme: ThemeData(
+          useMaterial3: true,
+          brightness: Brightness.light,
+          primaryColor: const Color(0xFF2196F3),
+          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+            iconTheme: IconThemeData(color: Color(0xFF333333)),
+            titleTextStyle: TextStyle(
+              color: Color(0xFF333333),
+              fontSize: 17,
+              fontWeight: FontWeight.w600,
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  ThemeMode _themeMode(String value) {
-    if (value == 'light') return ThemeMode.light;
-    if (value == 'dark' || value == 'black') return ThemeMode.dark;
-    return ThemeMode.system;
-  }
-
-  ThemeData _buildTheme(Brightness brightness) {
-    final dark = brightness == Brightness.dark;
-    return ThemeData(
-      useMaterial3: true,
-      brightness: brightness,
-      colorSchemeSeed: const Color(0xff3f51b5),
-      scaffoldBackgroundColor: dark ? const Color(0xff17181c) : const Color(0xfff7f7f7),
-      appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
-      cardTheme: CardTheme(
-        elevation: 1,
-        color: dark ? const Color(0xff24262b) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+          cardTheme: CardTheme(
+            color: Colors.white,
+            elevation: 1,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: Colors.white,
+            selectedItemColor: Color(0xFF2196F3),
+            unselectedItemColor: Colors.grey,
+            type: BottomNavigationBarType.fixed,
+            elevation: 8,
+          ),
+          dividerTheme: const DividerThemeData(
+            color: Color(0xFFEEEEEE),
+            thickness: 0.5,
+          ),
+        ),
+        home: const HomeScreen(),
       ),
     );
   }

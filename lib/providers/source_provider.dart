@@ -1,122 +1,132 @@
-import 'package:flutter/foundation.dart';
-import '../models/content.dart';
+/// 全局状态管理 v2 — 统一管理所有媒体源
+import 'package:flutter/material.dart';
+import '../models/video_source.dart';
+import '../models/unified_content.dart';
+import '../services/spider_service_v2.dart';
 import '../services/app_config.dart';
-import '../services/source_service.dart';
 
 class SourceProvider extends ChangeNotifier {
-  final SourceService service;
-  List<SourceDefinition> _sources = [];
-  bool _loading = true;
+  List<VideoSource> _sources = [];
+  VideoSource? _activeSource;
+  bool _isLoading = false;
+  String? _error;
 
-  SourceProvider({SourceService? service}) : service = service ?? const SourceService();
+  List<VideoSource> get sources => _sources;
+  VideoSource? get activeSource => _activeSource;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
 
-  List<SourceDefinition> get sources => List.unmodifiable(_sources);
-  bool get loading => _loading;
-  List<SourceDefinition> get enabledSources => _sources.where((e) => e.enabled).toList();
+  /// 按类型获取源列表
+  List<VideoSource> sourcesByType(String type) =>
+      _sources.where((s) => s.mediaType == type && s.isActive).toList();
+
+  /// 视频源
+  List<VideoSource> get videoSources => sourcesByType('video');
+  /// 漫画源
+  List<VideoSource> get comicSources => sourcesByType('comic');
+  /// 小说源
+  List<VideoSource> get novelSources => sourcesByType('novel');
+  /// 音乐源
+  List<VideoSource> get musicSources => sourcesByType('music');
+  /// 直播源
+  List<VideoSource> get liveSources => _sources.where((s) => s.type == 4 && s.isActive).toList();
 
   Future<void> init() async {
-    _loading = true;
+    _isLoading = true;
     notifyListeners();
+
     _sources = await AppConfig.getSources();
-    _loading = false;
-    notifyListeners();
-  }
-
-  Future<SearchResult> search(String query, {ContentType? type, SourceDefinition? only}) async {
-    final targets = only != null
-        ? [only]
-        : enabledSources.where((s) => type == null || s.type == type).toList();
-    final results = await Future.wait(targets.map((source) => service.search(source, query)));
-    final items = <MediaItem>[];
-    final errors = <String, String>{};
-    for (final result in results) {
-      items.addAll(result.items);
-      errors.addAll(result.errors);
+    final activeKey = await AppConfig.getActiveSourceKey();
+    if (activeKey != null) {
+      _activeSource = _sources.firstWhere(
+        (s) => s.key == activeKey, orElse: () => _sources.isNotEmpty ? _sources.first : _sources);
+    } else if (_sources.isNotEmpty) {
+      _activeSource = _sources.first;
     }
-    return SearchResult(query: query, items: items, errors: errors);
+
+    // 尝试在线刷新
+    try {
+      final configUrl = await AppConfig.getConfigUrl();
+      final remoteSources = await SpiderServiceV2.getSources(configUrl);
+      if (remoteSources.isNotEmpty) {
+        _sources = _mergeSources(_sources, remoteSources);
+        await AppConfig.saveSources(_sources);
+      }
+    } catch (_) {}
+
+    _isLoading = false;
+    notifyListeners();
   }
 
-  Future<List<MediaItem>> category({String? categoryId, int page = 1, ContentType type = ContentType.video}) async {
-    final source = enabledSources.where((s) => s.type == type).firstOrNull;
-    if (source == null) return [];
-    return service.category(source, categoryId: categoryId, page: page);
+  void setActiveSource(VideoSource source) {
+    _activeSource = source;
+    AppConfig.setActiveSource(source.key);
+    notifyListeners();
   }
 
-  Future<List<SourceCategory>> categories(SourceDefinition source) {
-    return service.categories(source);
-  }
-
-  Future<String> chapterContent(String sourceId, String url) async {
-    final source = sourceFor(sourceId);
-    return source == null ? '' : await service.chapterContent(source, url);
-  }
-
-  Future<List<String>> chapterImages(String sourceId, String url) async {
-    final source = sourceFor(sourceId);
-    return source == null ? [] : await service.chapterImages(source, url);
-  }
-
-  SourceDefinition? sourceFor(String id) {
-    return _sources.where((source) => source.id == id).firstOrNull;
-  }
-
-  Future<MediaItem?> detail(MediaItem item) async {
-    final source = sourceFor(item.sourceId);
-    return source == null ? null : service.detail(source, item.id);
-  }
-
-  Future<LocalShelf> localShelf() async {
-    final history = await AppConfig.getHistory();
-    final favorites = await AppConfig.getFavorites();
-    return LocalShelf(
-      history: history.map(_storedItem).toList(),
-      favorites: favorites.map(_storedItem).toList(),
-    );
-  }
-
-  MediaItem _storedItem(Map<String, dynamic> value) {
-    final typeName = value['type']?.toString() ?? 'video';
-    final type = ContentType.values.firstWhere(
-      (item) => item.name == typeName,
-      orElse: () => ContentType.video,
-    );
-    return MediaItem.fromMap(value, value['sourceId']?.toString() ?? '', type);
-  }
-
-  Future<void> addSource(SourceDefinition source) async {
-    _sources = [..._sources.where((e) => e.id != source.id), source];
+  Future<void> addSource(VideoSource source) async {
+    _sources.add(source);
     await AppConfig.saveSources(_sources);
     notifyListeners();
   }
 
-  Future<void> addSources(List<SourceDefinition> values) async {
-    for (final value in values) {
-      _sources = [..._sources.where((e) => e.id != value.id), value];
+  Future<void> removeSource(String key) async {
+    _sources.removeWhere((s) => s.key == key);
+    await AppConfig.saveSources(_sources);
+    if (_activeSource?.key == key && _sources.isNotEmpty) {
+      _activeSource = _sources.first;
     }
+    notifyListeners();
+  }
+
+  /// 批量添加源
+  Future<void> addSources(List<VideoSource> newSources) async {
+    _sources = _mergeSources(_sources, newSources);
     await AppConfig.saveSources(_sources);
     notifyListeners();
   }
 
-  Future<void> removeSource(String id) async {
-    _sources = _sources.where((e) => e.id != id).toList();
-    await AppConfig.saveSources(_sources);
+  /// 聚合搜索 (跨所有类型)
+  Future<AggregatedSearchResult> searchAll(String query, {MediaType? filterType}) async {
+    return SpiderServiceV2.searchAll(_sources, query, filterType: filterType);
+  }
+
+  /// 获取视频分类
+  Future<List<VideoContent>> getCategory(String? typeId, {int page = 1}) async {
+    if (_activeSource == null || _activeSource!.mediaType != 'video') return [];
+    final items = await SpiderServiceV2.getCategoryVideo(
+      _activeSource!, typeId: typeId, page: page);
+    return items;
+  }
+
+  /// 获取直播频道
+  Future<List<Map<String, String>>> getLiveChannels(String url) async {
+    return SpiderServiceV2.getLiveChannels(url);
+  }
+
+  /// 刷新在线配置
+  Future<void> refreshFromConfig(String configUrl) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      final remoteSources = await SpiderServiceV2.getSources(configUrl);
+      if (remoteSources.isNotEmpty) {
+        _sources = _mergeSources(_sources, remoteSources);
+        await AppConfig.saveSources(_sources);
+        await AppConfig.setConfigUrl(configUrl);
+      } else {
+        _error = '配置文件中未找到有效源';
+      }
+    } catch (e) { _error = '刷新失败: $e'; }
+    _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> toggleSource(SourceDefinition source) async {
-    await addSource(source.copyWith(enabled: !source.enabled));
+  List<VideoSource> _mergeSources(List<VideoSource> local, List<VideoSource> remote) {
+    final map = <String, VideoSource>{};
+    for (var s in local) map[s.key] = s;
+    for (var s in remote) map[s.key] = s;
+    return map.values.toList();
   }
-
-  Future<List<String>> searchHistory() => AppConfig.getSearchHistory();
-  void addSearchHistory(String value) { AppConfig.addSearchHistory(value); }
-}
-
-class LocalShelf {
-  final List<MediaItem> history;
-  final List<MediaItem> favorites;
-  const LocalShelf({required this.history, required this.favorites});
-}
-
-extension FirstOrNullExtension<E> on Iterable<E> {
-  E? get firstOrNull => isEmpty ? null : first;
 }

@@ -1,282 +1,199 @@
+/// 应用配置管理
+/// 管理源列表、用户偏好、主题设置等
 import 'dart:convert';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../models/content.dart';
+import '../models/video_source.dart';
 
 class AppConfig {
+  static const String _keySources = 'video_sources';
+  static const String _keyActiveSource = 'active_source';
+  static const String _keyThemeMode = 'theme_mode';
+  static const String _keyConfigUrl = 'config_url';
+  static const String _keyHistory = 'watch_history';
+  static const String _keyFavorites = 'favorites';
+  static const String _keySearchHistory = 'search_history';
+
+  static const String defaultConfigUrl =
+      'https://raw.githubusercontent.com/liu673cn/box/main/m.json';
+
+  /// 默认内置源
+  static final List<VideoSource> builtInSources = [
+    // ===== 视频源 =====
+    VideoSource(key: 'heimuer', name: '黑木耳',
+        api: 'https://json.heimuer.xyz/api.php/provide/vod/', type: 2, mediaType: 'video'),
+    VideoSource(key: 'ikun', name: 'ikun资源',
+        api: 'https://ikunzyapi.com/api.php/provide/vod/', type: 2, mediaType: 'video'),
+    VideoSource(key: 'ffzy', name: '非凡资源',
+        api: 'https://cj.ffzyapi.com/api.php/provide/vod/', type: 2, mediaType: 'video'),
+    VideoSource(key: 'hongniu', name: '红牛资源',
+        api: 'https://www.hongniuzy2.com/api.php/provide/vod/', type: 2, mediaType: 'video'),
+    VideoSource(key: 'bfzy', name: '暴风资源',
+        api: 'https://bfzyapi.com/api.php/provide/vod/', type: 2, mediaType: 'video'),
+    // ===== 漫画源 (示例) =====
+    VideoSource(key: 'copymanga', name: '拷贝漫画',
+        api: 'https://api.copymanga.site/api/v3', type: 2, mediaType: 'comic'),
+    // ===== 小说源 (示例) =====
+    VideoSource(key: 'bqg', name: '笔趣阁',
+        api: 'https://www.xbiquge.la', type: 2, mediaType: 'novel'),
+    // ===== 音乐源 (示例) =====
+    VideoSource(key: 'netease', name: '网易云音乐',
+        api: 'https://netease-cloud-music-api.vercel.app', type: 2, mediaType: 'music'),
+  ];
+
   static SharedPreferences? _prefs;
-  static SharedPreferences? get prefs => _prefs;
-  static List<SourceDefinition> _sourcesCache = <SourceDefinition>[];
-  static List<Map<String, dynamic>> _favoritesCache = <Map<String, dynamic>>[];
-  static List<Map<String, dynamic>> _historyCache = <Map<String, dynamic>>[];
-
-  static final ValueNotifier<String> languageNotifier = ValueNotifier<String>('zh');
-  static String get language => languageNotifier.value;
-  static set language(String value) { languageNotifier.value = value; }
-
-  static final ValueNotifier<String> themeNotifier = ValueNotifier<String>('system');
-  static String get theme => themeNotifier.value;
-
-  static bool autoCheckUpdate = true;
-  static bool nsfw = false;
-
-  // WebDAV settings
-  static bool webdavEnabled = false;
-  static String webdavHost = '';
-  static String webdavUsername = '';
-  static String webdavPassword = '';
-  static String webdavPath = '/';
-
-  // AI settings
-  static String aiConfigName = '';
-  static String aiApiUrl = '';
-  static String aiApiKey = '';
-  static String aiModel = 'gpt-3.5-turbo';
-
-  // TMDB key
-  static String tmdbKey = '';
 
   static Future<void> init() async {
-    languageNotifier.value = 'zh';
-    final prefs = await SharedPreferences.getInstance();
-    _prefs = prefs;
-    languageNotifier.value = prefs.getString('language') ?? 'zh';
-    themeNotifier.value = prefs.getString('theme') ?? 'system';
-    tmdbKey = prefs.getString('tmdbKey') ?? '';
-    autoCheckUpdate = prefs.getBool('autoCheckUpdate') ?? true;
-    nsfw = prefs.getBool('nsfw') ?? false;
-    // WebDAV
-    webdavEnabled = prefs.getBool('webdavEnabled') ?? false;
-    webdavHost = prefs.getString('webdavHost') ?? '';
-    webdavUsername = prefs.getString('webdavUsername') ?? '';
-    webdavPassword = prefs.getString('webdavPassword') ?? '';
-    webdavPath = prefs.getString('webdavPath') ?? '/';
-    // AI settings
-    aiConfigName = prefs.getString('aiConfigName') ?? '';
-    aiApiUrl = prefs.getString('aiApiUrl') ?? '';
-    aiApiKey = prefs.getString('aiApiKey') ?? '';
-    aiModel = prefs.getString('aiModel') ?? 'gpt-3.5-turbo';
-    _sourcesCache = _parseSources(prefs.getString('sources') ?? '[]');
-    _favoritesCache = _parseJsonList(prefs.getString('favorites') ?? '[]');
-    _historyCache = _parseJsonList(prefs.getString('history') ?? '[]');
+    _prefs = await SharedPreferences.getInstance();
   }
 
-  static Future<void> setLanguage(String language) async {
-    languageNotifier.value = language;
-    await _prefs?.setString('language', language);
+  // ============ 源管理 ============
+
+  static Future<List<VideoSource>> getSources() async {
+    final stored = _prefs?.getString(_keySources);
+    if (stored != null) {
+      final list = jsonDecode(stored) as List;
+      return list.map((item) => VideoSource.fromJson(item)).toList();
+    }
+    // 首次启动返回内置源
+    await saveSources(builtInSources);
+    return builtInSources;
   }
 
-  static Future<void> setTheme(String theme) async {
-    themeNotifier.value = theme;
-    await _prefs?.setString('theme', theme);
+  static Future<void> saveSources(List<VideoSource> sources) async {
+    final json = sources.map((s) => s.toJson()).toList();
+    await _prefs?.setString(_keySources, jsonEncode(json));
   }
 
-  static Future<void> setTmdbKey(String key) async {
-    tmdbKey = key;
-    await _prefs?.setString('tmdbKey', key);
+  static Future<void> addSource(VideoSource source) async {
+    final sources = await getSources();
+    sources.add(source);
+    await saveSources(sources);
   }
 
-  static Future<void> setAutoCheckUpdate(bool value) async {
-    autoCheckUpdate = value;
-    await _prefs?.setBool('autoCheckUpdate', value);
+  static Future<void> removeSource(String key) async {
+    final sources = await getSources();
+    sources.removeWhere((s) => s.key == key);
+    await saveSources(sources);
   }
 
-  static Future<void> setNsfw(bool value) async {
-    nsfw = value;
-    await _prefs?.setBool('nsfw', value);
+  static Future<String?> getActiveSourceKey() async {
+    return _prefs?.getString(_keyActiveSource);
   }
 
-  // WebDAV setters
-  static Future<void> setWebdavEnabled(bool value) async {
-    webdavEnabled = value;
-    await _prefs?.setBool('webdavEnabled', value);
+  static Future<void> setActiveSource(String key) async {
+    await _prefs?.setString(_keyActiveSource, key);
   }
 
-  static Future<void> setWebdavHost(String value) async {
-    webdavHost = value;
-    await _prefs?.setString('webdavHost', value);
+  // ============ 在线配置 ============
+
+  static Future<String> getConfigUrl() async {
+    return _prefs?.getString(_keyConfigUrl) ?? defaultConfigUrl;
   }
 
-  static Future<void> setWebdavUsername(String value) async {
-    webdavUsername = value;
-    await _prefs?.setString('webdavUsername', value);
+  static Future<void> setConfigUrl(String url) async {
+    await _prefs?.setString(_keyConfigUrl, url);
   }
 
-  static Future<void> setWebdavPassword(String value) async {
-    webdavPassword = value;
-    await _prefs?.setString('webdavPassword', value);
+  // ============ 主题 ============
+
+  static Future<int> getThemeMode() async {
+    return _prefs?.getInt(_keyThemeMode) ?? 0; // 0=跟随系统, 1=亮色, 2=暗色
   }
 
-  static Future<void> setWebdavPath(String value) async {
-    webdavPath = value;
-    await _prefs?.setString('webdavPath', value);
+  static Future<void> setThemeMode(int mode) async {
+    await _prefs?.setInt(_keyThemeMode, mode);
   }
 
-  // AI setters
-  static Future<void> setAiConfigName(String value) async {
-    aiConfigName = value;
-    await _prefs?.setString('aiConfigName', value);
-  }
-
-  static Future<void> setAiApiUrl(String value) async {
-    aiApiUrl = value;
-    await _prefs?.setString('aiApiUrl', value);
-  }
-
-  static Future<void> setAiApiKey(String value) async {
-    aiApiKey = value;
-    await _prefs?.setString('aiApiKey', value);
-  }
-
-  static Future<void> setAiModel(String value) async {
-    aiModel = value;
-    await _prefs?.setString('aiModel', value);
-  }
-
-  // Plugin repository URL setting
-  static String pluginRepositoryUrl = '';
-  static Future<void> setPluginRepositoryUrl(String value) async {
-    pluginRepositoryUrl = value;
-    await _prefs?.setString('pluginRepositoryUrl', value);
-  }
-
-  static Future<String> getPluginRepositoryUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('pluginRepositoryUrl') ?? '';
-  }
-
-  static List<SourceDefinition> get sources => _sourcesCache;
-  static List<SourceDefinition> get cachedSources => _sourcesCache;
-
-  static Future<List<SourceDefinition>> getSources() async {
-    return _sourcesCache;
-  }
+  // ============ 历史记录 ============
 
   static Future<List<Map<String, dynamic>>> getHistory() async {
-    return _historyCache;
-  }
-
-  static Future<List<Map<String, dynamic>>> getFavorites() async {
-    return _favoritesCache;
-  }
-
-  static List<String> _searchHistoryCache = [];
-
-  static Future<List<String>> getSearchHistory() async {
-    return _searchHistoryCache;
-  }
-
-  static void addSearchHistory(String value) {
-    if (value.isEmpty) return;
-    _searchHistoryCache = _searchHistoryCache.where((String s) => s != value).toList(growable: true)..insert(0, value);
-    if (_searchHistoryCache.length > 20) {
-      _searchHistoryCache = _searchHistoryCache.sublist(0, 20);
+    final stored = _prefs?.getString(_keyHistory);
+    if (stored != null) {
+      return List<Map<String, dynamic>>.from(jsonDecode(stored));
     }
+    return [];
   }
 
-  // For backward compatibility with player_page
-  static Future<void> addHistory(MediaItem item) async {
-    await addHistoryItem(item);
-  }
-  static List<Map<String, dynamic>> get favorites => _favoritesCache;
-  static List<Map<String, dynamic>> get history => _historyCache;
-
-  static Future<void> saveSources(List<SourceDefinition> sources) async {
-    _sourcesCache = sources;
-    await _prefs?.setString('sources', jsonEncode(sources.map((e) => e.toMap()).toList()));
-  }
-
-  static Future<void> toggleFavorite(MediaItem item) async {
-    final list = List<Map<String, dynamic>>.from(_favoritesCache);
-    final idx = list.indexWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    if (idx >= 0) {
-      list.removeAt(idx);
-    } else {
-      list.add(<String, dynamic>{
-        'id': item.id,
-        'sourceId': item.sourceId,
-        'type': item.type,
-        'name': item.name,
-        'poster': item.poster,
-        'title': item.title,
-        'url': item.url,
-        'createdAt': DateTime.now().toIso8601String(),
-      });
-    }
-    _favoritesCache = list;
-    await _prefs?.setString('favorites', jsonEncode(list));
+  static Future<void> addHistory(Map<String, dynamic> item) async {
+    final history = await getHistory();
+    // 去重 (按 id 和 sourceKey)
+    history.removeWhere((h) =>
+        h['id'] == item['id'] && h['sourceKey'] == item['sourceKey']);
+    history.insert(0, item);
+    // 最多保留 200 条
+    if (history.length > 200) history.removeRange(200, history.length);
+    await _prefs?.setString(_keyHistory, jsonEncode(history));
   }
 
-  static bool isFavorite(MediaItem item) {
-    return _favoritesCache.any((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-  }
-
-  static Future<void> clearFavorites() async {
-    _favoritesCache = <Map<String, dynamic>>[];
-    await _prefs?.remove('favorites');
-  }
-
-  static Future<void> addHistoryItem(MediaItem item) async {
-    final list = List<Map<String, dynamic>>.from(_historyCache);
-    list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    list.insert(0, <String, dynamic>{
-      'id': item.id,
-      'sourceId': item.sourceId,
-      'type': item.type,
-      'name': item.name,
-      'poster': item.poster,
-      'title': item.title,
-      'url': item.url,
-      'createdAt': DateTime.now().toIso8601String(),
-    });
-    if (list.length > 200) {
-      list.removeRange(200, list.length);
-    }
-    _historyCache = list;
-    await _prefs?.setString('history', jsonEncode(list));
-  }
-
-  static Future<void> removeHistoryItem(MediaItem item) async {
-    final list = List<Map<String, dynamic>>.from(_historyCache);
-    list.removeWhere((e) => e['id'] == item.id && e['sourceId'] == item.sourceId);
-    _historyCache = list;
-    await _prefs?.setString('history', jsonEncode(list));
+  static Future<void> removeHistory(String id, String sourceKey) async {
+    final history = await getHistory();
+    history.removeWhere((h) =>
+        h['id'] == id && h['sourceKey'] == sourceKey);
+    await _prefs?.setString(_keyHistory, jsonEncode(history));
   }
 
   static Future<void> clearHistory() async {
-    _historyCache = <Map<String, dynamic>>[];
-    await _prefs?.remove('history');
+    await _prefs?.remove(_keyHistory);
   }
 
-  static Future<void> setFavorites(List<Map<String, dynamic>> items) async {
-    _favoritesCache = items;
-    await _prefs?.setString('favorites', jsonEncode(items));
-  }
+  // ============ 收藏 ============
 
-  static Future<void> setHistory(List<Map<String, dynamic>> items) async {
-    _historyCache = items;
-    await _prefs?.setString('history', jsonEncode(items));
-  }
-
-  static Future<void> saveHistory(List<MediaItem> items) async {
-    final maps = items.map((e) => e.toMap()).toList();
-    await setHistory(maps);
-  }
-
-  static List<SourceDefinition> _parseSources(String jsonStr) {
-    try {
-      final list = (jsonDecode(jsonStr) as List).cast<Map<String, dynamic>>();
-      return list.map((e) => SourceDefinition.fromMap(e as Map<String, dynamic>)).toList();
-    } catch (_) {
-      return <SourceDefinition>[];
+  static Future<List<Map<String, dynamic>>> getFavorites() async {
+    final stored = _prefs?.getString(_keyFavorites);
+    if (stored != null) {
+      return List<Map<String, dynamic>>.from(jsonDecode(stored));
     }
+    return [];
   }
 
-  static List<Map<String, dynamic>> _parseJsonList(String jsonStr) {
-    try {
-      return (jsonDecode(jsonStr) as List<dynamic>).map((e) => e as Map<String, dynamic>).toList();
-    } catch (_) {
-      return <Map<String, dynamic>>[];
-    }
+  static Future<void> addFavorite(Map<String, dynamic> item) async {
+    final favorites = await getFavorites();
+    favorites.removeWhere((f) =>
+        f['id'] == item['id'] && f['sourceKey'] == item['sourceKey']);
+    favorites.insert(0, item);
+    await _prefs?.setString(_keyFavorites, jsonEncode(favorites));
+  }
+
+  static Future<void> removeFavorite(String id, String sourceKey) async {
+    final favorites = await getFavorites();
+    favorites.removeWhere((f) =>
+        f['id'] == id && f['sourceKey'] == sourceKey);
+    await _prefs?.setString(_keyFavorites, jsonEncode(favorites));
+  }
+
+  static Future<bool> isFavorite(String id, String sourceKey) async {
+    final favorites = await getFavorites();
+    return favorites.any((f) =>
+        f['id'] == id && f['sourceKey'] == sourceKey);
+  }
+
+  // ============ 搜索历史 ============
+
+  static Future<List<String>> getSearchHistory() async {
+    final stored = _prefs?.getString(_keySearchHistory);
+    if (stored != null) return List<String>.from(jsonDecode(stored));
+    return [];
+  }
+
+  static Future<void> saveSearchHistory(String query) async {
+    final history = await getSearchHistory();
+    history.remove(query);
+    history.insert(0, query);
+    if (history.length > 30) history.removeRange(30, history.length);
+    await _prefs?.setString(_keySearchHistory, jsonEncode(history));
+  }
+
+  static Future<void> clearSearchHistory() async {
+    await _prefs?.remove(_keySearchHistory);
+  }
+
+  // ============ 备份/恢复辅助 ============
+
+  static Future<void> saveHistory(List<Map<String, dynamic>> history) async {
+    await _prefs?.setString(_keyHistory, jsonEncode(history));
+  }
+
+  static Future<void> saveFavorites(List<Map<String, dynamic>> favorites) async {
+    await _prefs?.setString(_keyFavorites, jsonEncode(favorites));
   }
 }

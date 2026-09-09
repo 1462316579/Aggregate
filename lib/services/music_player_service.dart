@@ -1,153 +1,201 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter/foundation.dart';
-import '../models/content.dart';
-import 'source_service.dart';
+/// 音乐播放服务 — 后台播放 + 歌词 + 播放队列
+import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import '../models/music_detail.dart';
+import '../services/spider_service_v2.dart';
+import '../models/video_source.dart';
 
-/// Eso-style audio service: queue, repeat modes, seek and synchronized LRC lyrics.
 class MusicPlayerService extends ChangeNotifier {
-  final AudioPlayer _player = AudioPlayer();
-  final SourceService _sourceService = const SourceService();
-  final List<MediaItem> _queue = <MediaItem>[];
-  final List<LyricLine> _lyrics = <LyricLine>[];
-
-  MediaItem? _current;
-  int _index = -1;
-  PlayerState _state = PlayerState.stopped;
+  final Player _player = Player();
+  MusicTrack? _currentTrack;
+  List<MusicTrack> _playlist = [];
+  int _currentIndex = -1;
+  bool _isPlaying = false;
+  bool _isLoading = false;
   Duration _position = Duration.zero;
   Duration _duration = Duration.zero;
+  List<LyricLine> _lyrics = [];
+  int _currentLyricIndex = -1;
   RepeatMode _repeatMode = RepeatMode.all;
-  int _lyricIndex = -1;
+  bool _shuffle = false;
   String? _error;
-  SourceDefinition? _source;
+
+  Player get player => _player;
+  MusicTrack? get currentTrack => _currentTrack;
+  List<MusicTrack> get playlist => _playlist;
+  int get currentIndex => _currentIndex;
+  bool get isPlaying => _isPlaying;
+  bool get isLoading => _isLoading;
+  Duration get position => _position;
+  Duration get duration => _duration;
+  List<LyricLine> get lyrics => _lyrics;
+  int get currentLyricIndex => _currentLyricIndex;
+  RepeatMode get repeatMode => _repeatMode;
+  bool get shuffle => _shuffle;
+  String? get error => _error;
+  bool get hasTrack => _currentTrack != null;
+  bool get hasPrev => _currentIndex > 0 || _repeatMode == RepeatMode.all;
+  bool get hasNext => _currentIndex < _playlist.length - 1 || _repeatMode == RepeatMode.all;
 
   MusicPlayerService() {
-    _player.onPlayerStateChanged.listen((value) {
-      _state = value;
+    _player.stream.playing.listen((p) {
+      _isPlaying = p;
       notifyListeners();
     });
-    _player.onPositionChanged.listen((value) {
-      _position = value;
+    _player.stream.position.listen((pos) {
+      _position = pos;
       _updateLyricIndex();
       notifyListeners();
     });
-    _player.onDurationChanged.listen((value) {
-      _duration = value;
+    _player.stream.duration.listen((d) {
+      _duration = d;
       notifyListeners();
     });
-    _player.onPlayerComplete.listen((_) => _completeCurrent());
-  }
-
-  List<MediaItem> get queue => List.unmodifiable(_queue);
-  MediaItem? get current => _current;
-  int get index => _index;
-  PlayerState get state => _state;
-  bool get playing => _state == PlayerState.playing;
-  Duration get position => _position;
-  Duration get duration => _duration;
-  List<LyricLine> get lyrics => List.unmodifiable(_lyrics);
-  int get lyricIndex => _lyricIndex;
-  RepeatMode get repeatMode => _repeatMode;
-  String? get error => _error;
-
-  Future<void> playQueue(
-    List<MediaItem> items, {
-    int startIndex = 0,
-    SourceDefinition? source,
-  }) async {
-    _queue
-      ..clear()
-      ..addAll(items.where((item) => item.type == ContentType.music));
-    if (_queue.isEmpty) return;
-    _index = startIndex.clamp(0, _queue.length - 1).toInt();
-    await playCurrent(source: source);
-  }
-
-  Future<void> playCurrent({SourceDefinition? source}) async {
-    if (_index < 0 || _index >= _queue.length) return;
-    final item = _queue[_index];
-    _source = source ?? _source;
-    _current = item;
-    _error = null;
-    if (source != null) _source = source;
-    _lyrics
-      ..clear()
-      ..addAll(LyricLine.parse(item.lyrics ?? ''));
-    _lyricIndex = -1;
-    notifyListeners();
-
-    try {
-      final url = await _sourceService.resolveMusicUrl(_source, item);
-      if (url == null || url.isEmpty) {
-        throw StateError('当前歌曲没有可播放地址');
-      }
-      await _player.stop();
-      await _player.play(UrlSource(url));
-    } catch (error) {
-      _error = '$error';
-      _state = PlayerState.stopped;
-      notifyListeners();
-    }
-  }
-
-  Future<void> toggle() async {
-    if (playing) {
-      await _player.pause();
-    } else if (_current != null) {
-      await _player.resume();
-    }
-  }
-
-  Future<void> next({SourceDefinition? source}) async {
-    if (_queue.isEmpty) return;
-    if (_index + 1 >= _queue.length) {
-      if (_repeatMode == RepeatMode.none) return;
-      _index = 0;
-    } else {
-      _index++;
-    }
-    await playCurrent(source: source);
-  }
-
-  Future<void> previous({SourceDefinition? source}) async {
-    if (_queue.isEmpty) return;
-    _index = _index <= 0 ? _queue.length - 1 : _index - 1;
-    await playCurrent(source: source);
-  }
-
-  Future<void> seek(Duration value) => _player.seek(value);
-
-  void setRepeatMode(RepeatMode value) {
-    _repeatMode = value;
-    notifyListeners();
-  }
-
-  void _completeCurrent() async {
-    if (_repeatMode == RepeatMode.one) {
-      await _player.seek(Duration.zero);
-      await _player.resume();
-      return;
-    }
-    await next();
+    _player.stream.completed.listen((completed) {
+      if (completed) next();
+    });
   }
 
   void _updateLyricIndex() {
     if (_lyrics.isEmpty) return;
-    var found = -1;
-    for (var i = 0; i < _lyrics.length; i++) {
-      if (_position >= _lyrics[i].start && _position <= _lyrics[i].end) {
-        found = i;
-        break;
+    for (int i = _lyrics.length - 1; i >= 0; i--) {
+      if (_position >= _lyrics[i].time) {
+        if (_currentLyricIndex != i) {
+          _currentLyricIndex = i;
+          notifyListeners();
+        }
+        return;
       }
     }
-    if (found != _lyricIndex) _lyricIndex = found;
   }
 
-  static String format(Duration value) {
-    final minutes = value.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = value.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return value.inHours > 0
-        ? '${value.inHours.toString().padLeft(2, '0')}:$minutes:$seconds'
-        : '$minutes:$seconds';
+  /// 播放单曲
+  Future<void> play(VideoSource source, MusicTrack track) async {
+    _isLoading = true;
+    _error = null;
+    _currentTrack = track;
+    notifyListeners();
+
+    try {
+      final url = track.playUrl ?? await SpiderServiceV2.getMusicPlayUrl(source, track.id);
+      if (url == null) {
+        _error = '无法获取播放地址';
+        _isLoading = false;
+        notifyListeners();
+        return;
+      }
+
+      await _player.open(Media(url));
+
+      // 加载歌词
+      final lyricStr = track.lyric ?? await SpiderServiceV2.getMusicLyric(source, track.id);
+      if (lyricStr != null) {
+        _lyrics = LyricLine.parse(lyricStr);
+      } else {
+        _lyrics = [];
+      }
+
+      _isLoading = false;
+      notifyListeners();
+    } catch (e) {
+      _error = '播放失败: $e';
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  /// 播放歌单/列表
+  Future<void> playPlaylist(
+    VideoSource source, List<MusicTrack> tracks, {int startIndex = 0}
+  ) async {
+    _playlist = List.from(tracks);
+    _currentIndex = startIndex;
+    if (_playlist.isNotEmpty) {
+      await play(source, _playlist[_currentIndex]);
+    }
+  }
+
+  /// 播放/暂停切换
+  void playOrPause() => _player.playOrPause();
+
+  void pause() => _player.pause();
+  void resume() => _player.resume();
+
+  /// 下一曲
+  Future<void> next() async {
+    if (_playlist.isEmpty) return;
+    if (_shuffle) {
+      _currentIndex = (DateTime.now().millisecondsSinceEpoch % _playlist.length);
+    } else {
+      _currentIndex++;
+      if (_currentIndex >= _playlist.length) {
+        if (_repeatMode == RepeatMode.all) {
+          _currentIndex = 0;
+        } else {
+          _currentIndex = _playlist.length - 1;
+          return;
+        }
+      }
+    }
+    notifyListeners();
+    // 需要 source 引用，这里用当前 track 的 sourceKey
+    // 实际使用中由 Provider 传入
+  }
+
+  /// 上一曲
+  Future<void> prev() async {
+    if (_playlist.isEmpty) return;
+    _currentIndex--;
+    if (_currentIndex < 0) {
+      _currentIndex = _repeatMode == RepeatMode.all ? _playlist.length - 1 : 0;
+    }
+    notifyListeners();
+  }
+
+  /// 跳到指定位置
+  void seek(Duration position) => _player.seek(position);
+
+  /// 跳到指定进度百分比
+  void seekPercent(double percent) {
+    final target = Duration(
+      milliseconds: (_duration.inMilliseconds * percent).toInt(),
+    );
+    _player.seek(target);
+  }
+
+  /// 切换循环模式
+  void toggleRepeat() {
+    switch (_repeatMode) {
+      case RepeatMode.none:
+        _repeatMode = RepeatMode.all;
+        break;
+      case RepeatMode.all:
+        _repeatMode = RepeatMode.one;
+        break;
+      case RepeatMode.one:
+        _repeatMode = RepeatMode.none;
+    }
+    _player.setRepeatMode(_repeatMode == RepeatMode.one
+        ? RepeatMode.single
+        : _repeatMode == RepeatMode.all
+            ? RepeatMode.playlist
+            : RepeatMode.none);
+    notifyListeners();
+  }
+
+  /// 切换随机播放
+  void toggleShuffle() {
+    _shuffle = !_shuffle;
+    notifyListeners();
+  }
+
+  /// 格式化时间
+  static String formatDuration(Duration d) {
+    final h = d.inHours;
+    final m = d.inMinutes.remainder(60);
+    final s = d.inSeconds.remainder(60);
+    if (h > 0) return '${h.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
   }
 
   @override
@@ -158,40 +206,3 @@ class MusicPlayerService extends ChangeNotifier {
 }
 
 enum RepeatMode { none, all, one }
-
-class LyricLine {
-  final Duration start;
-  final Duration end;
-  final String text;
-
-  const LyricLine({required this.start, required this.end, required this.text});
-
-  static List<LyricLine> parse(String value) {
-    final result = <LyricLine>[];
-    final pattern = RegExp(r'\[(\d{1,2}):(\d{1,2})(?:\.(\d{1,3}))?\](.*)');
-    for (final line in value.split('\n')) {
-      final match = pattern.firstMatch(line.trim());
-      if (match == null) continue;
-      final minutes = int.tryParse(match.group(1)!) ?? 0;
-      final seconds = int.tryParse(match.group(2)!) ?? 0;
-      final fraction = (match.group(3) ?? '0').padRight(3, '0');
-      final milliseconds = int.tryParse(fraction) ?? 0;
-      result.add(LyricLine(
-        start: Duration(minutes: minutes, seconds: seconds, milliseconds: milliseconds),
-        end: Duration.zero,
-        text: (match.group(4) ?? '').trim(),
-      ));
-    }
-    result.sort((a, b) => a.start.compareTo(b.start));
-    return [
-      for (var i = 0; i < result.length; i++)
-        LyricLine(
-          start: result[i].start,
-          end: i + 1 < result.length
-              ? result[i + 1].start
-              : result[i].start + const Duration(seconds: 10),
-          text: result[i].text,
-        ),
-    ];
-  }
-}
