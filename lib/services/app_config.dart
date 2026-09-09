@@ -5,6 +5,7 @@ import '../models/content.dart';
 
 class AppConfig {
   static SharedPreferences? _prefs;
+  static SharedPreferences? get prefs => _prefs;
   static List<SourceDefinition> _sourcesCache = <SourceDefinition>[];
   static List<Map<String, dynamic>> _favoritesCache = <Map<String, dynamic>>[];
   static List<Map<String, dynamic>> _historyCache = <Map<String, dynamic>>[];
