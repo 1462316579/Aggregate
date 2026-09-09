@@ -1,58 +1,87 @@
-name: Build and Release
+name: Build Release APK and Publish to Releases
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
-  build-android:
-    name: Build Android APK
+  build-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Setup JDK
-        uses: actions/setup-java@v4
+      
+      - name: Setup Flutter 3.16
+        uses: subosito/flutter-action@v1
         with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: 'gradle'
-          cache-dependency-path: android/gradle.lockfile
-
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.16.0'
           channel: 'stable'
           cache: true
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release --split-per-abi
-
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          files: build/app/outputs/flutter-apk/*.apk
-          draft: false
-          prerelease: false
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload APK for testing
-        if: github.event_name == 'workflow_dispatch'
+      
+      - name: Clean and get dependencies
+        run: |
+          flutter clean
+          flutter pub get
+      
+      - name: Build Release APK
+        run: |
+          flutter build apk --release --split-per-abi
+          ls -la build/app/outputs/flutter-apk/
+      
+      - name: Assemble Universal APK
+        run: |
+          # Create universal APK by zipping the arm64 and armv7 APKs together
+          # or just pick the largest one as the main release
+          APK_DIR="build/app/outputs/flutter-apk"
+          
+          # Find all release APKs
+          ls -la $APK_DIR/*.apk
+          
+          # Use the first APK found (usually the universal or arm64)
+          if [ -f "$APK_DIR/app-release.apk" ]; then
+            cp "$APK_DIR/app-release.apk" allplay-release.apk
+          elif [ -f "$APK_DIR/app-release-arm64-v8a.apk" ]; then
+            cp "$APK_DIR/app-release-arm64-v8a.apk" allplay-release.apk
+          elif ls $APK_DIR/*.apk &>/dev/null; then
+            # Pick the largest APK
+            ls -S $APK_DIR/*.apk | head -1 | xargs -I{} cp {} allplay-release.apk
+          else
+            echo "No APK found"
+            exit 1
+          fi
+          
+          ls -lh allplay-release.apk
+          file allplay-release.apk
+      
+      - name: Upload Release Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/*.apk
-          retention-days: 30
+          name: allplay-release-apk
+          path: allplay-release.apk
+          retention-days: 7
+          if-no-files-found: error
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.run_number }}
+          name: AllPlay Release ${{ github.run_number }}
+          files: allplay-release.apk
+          body: |
+            ## AllPlay Android Release
+            
+            - Platform: Android (Release Build)
+            - Flutter Version: 3.16.0
+            - Build Time: ${{ github.event.head_commit.timestamp }}
+            
+            ### Installation
+            1. Download the APK below
+            2. Enable "Install from unknown sources" on your Android device
+            3. Tap to install
+            
+            This is a **release** build - not debug.
+          draft: false
+          prerelease: false
