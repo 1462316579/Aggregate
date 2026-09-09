@@ -30,7 +30,6 @@ dependencies:
   
   # 解析与爬虫
   html: ^0.15.4
-  xpath: ^1.4.0
   flutter_js: ^0.8.2
   
   # WebView (影视嗅探)
