@@ -18,6 +18,11 @@ class MediaItem {
   final String? lyrics;
   final List<MediaEpisode> episodes;
 
+  // Aliases for compatibility
+  String? get name => title;
+  String? get poster => cover;
+  String? get url => playUrl;
+
   const MediaItem({
     required this.id,
     required this.title,
