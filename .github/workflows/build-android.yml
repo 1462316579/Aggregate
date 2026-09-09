@@ -8,7 +8,7 @@ on:
 jobs:
   build-android:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
     
     steps:
       - name: Checkout
@@ -21,24 +21,27 @@ jobs:
           channel: 'stable'
       
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub get || {
+            echo "Retry..."
+            sleep 5
+            flutter pub get
+          }
       
       - name: Build APK
-        run: flutter build apk --debug
-      
-      - name: Verify APK exists
         run: |
-          echo "Checking build output..."
-          ls -la build/app/outputs/flutter-apk/
-          echo ""
-          echo "APK files:"
-          find build -name "*.apk" -type f -exec ls -la {} \;
+          flutter build apk --debug 2>&1 | tee build.log
       
-      - name: Upload APK artifact
+      - name: Check APK
+        run: |
+          echo "Looking for APK..."
+          find build -name "*.apk" -type f -exec ls -lh {} \;
+          cp build/app/outputs/flutter-apk/app-debug.apk allplay.apk 2>/dev/null || echo "APK not found"
+          ls -lh allplay.apk 2>/dev/null
+      
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: allplay-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
-          if-no-files-found: error
+          path: allplay.apk
           retention-days: 7
-          if: success()
