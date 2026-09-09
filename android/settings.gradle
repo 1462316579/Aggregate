@@ -1,12 +1,23 @@
-[pluginManagement] {
+pluginManagement {
+    def flutterSdkPath = {
+        def properties = new Properties()
+        file("local.properties").withInputStream { properties.load(it) }
+        def flutterSdk = properties.getProperty('flutter.sdk')
+        if (flutterSdk == null) {
+            throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+        }
+        return flutterSdk
+    }()
+
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.0-stable.tar.xz" }
     }
 }
 
-[dependencies] {
+dependencies {
     classpath "com.android.tools.build:gradle:8.3.2"
     classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"
 }
