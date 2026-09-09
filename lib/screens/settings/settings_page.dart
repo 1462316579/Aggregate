@@ -212,14 +212,9 @@ class _SettingsPageState extends State<SettingsPage> {
     title: Text(title), subtitle: Text(subtitle), value: value, onChanged: onChanged,
   );
 
-  Widget _asyncInputTile(String title, String subtitle, VoidCallback onTap) => ListTile(
-    title: Text(title), subtitle: Text(subtitle), trailing: const Icon(Icons.chevron_right), onTap: onTap,
-  );
-  
-  // Async version of _inputTile for _textDialog
   Widget _asyncInputTile(String title, String subtitle, {required bool saveProxy}) => ListTile(
     title: Text(title), subtitle: Text(subtitle), trailing: const Icon(Icons.chevron_right),
-    onTap: () async => await _textDialog(title, subtitle, saveProxy),
+    onTap: () => _textDialog(title, subtitle, saveProxy),
   );
 
   Widget _radioTile(String title, String current, List<String> values, ValueChanged<String> onChanged, {Map<String, String>? labels}) => ListTile(
@@ -284,7 +279,7 @@ class _SettingsPageState extends State<SettingsPage> {
             // 根据标题判断保存位置
             if (title == AppStrings.of(AppConfig.language).t('pluginRepositoryUrl')) {
               _pluginRepositoryUrl = text;
-              await AppConfig.setPluginRepositoryUrl(text);
+              AppConfig.setPluginRepositoryUrl(text); // fire-and-forget
             } else if (saveProxy) {
               _proxy = text;
             } else {
