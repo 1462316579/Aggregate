@@ -190,8 +190,8 @@ class BackupService {
         'webdavPassword': '',
         'webdavPath': AppConfig.webdavPath,
       },
-      'favorites': _config.favorites,
-      'history': _config.history,
+      'favorites': AppConfig.favorites,
+      'history': AppConfig.history,
     };
   }
 

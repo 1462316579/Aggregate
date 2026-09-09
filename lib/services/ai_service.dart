@@ -73,7 +73,6 @@ class AIService {
           'messages': formattedMessages,
           'model': model,
         }),
-        timeout: const Duration(seconds: 60),
       );
 
       if (response.statusCode == 200) {
