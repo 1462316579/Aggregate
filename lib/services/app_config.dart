@@ -145,6 +145,39 @@ class AppConfig {
   }
 
   static List<SourceDefinition> get sources => _sourcesCache;
+  static List<SourceDefinition> get cachedSources => _sourcesCache;
+
+  static Future<List<SourceDefinition>> getSources() async {
+    return _sourcesCache;
+  }
+
+  static Future<List<Map<String, dynamic>>> getHistory() async {
+    return _historyCache;
+  }
+
+  static Future<List<Map<String, dynamic>>> getFavorites() async {
+    return _favoritesCache;
+  }
+
+  static List<String> _searchHistoryCache = [];
+
+  static Future<List<String>> getSearchHistory() async {
+    return _searchHistoryCache;
+  }
+
+  static void addSearchHistory(String value) {
+    if (value.isEmpty) return;
+    _searchHistoryCache = [_searchHistoryCache.where((s) => s != value).toList(), value]
+        .expand((e) => e).toList();
+    if (_searchHistoryCache.length > 20) {
+      _searchHistoryCache = _searchHistoryCache.sublist(0, 20);
+    }
+  }
+
+  // For backward compatibility with player_page
+  static Future<void> addHistory(MediaItem item) async {
+    await addHistoryItem(item);
+  }
   static List<Map<String, dynamic>> get favorites => _favoritesCache;
   static List<Map<String, dynamic>> get history => _historyCache;
 

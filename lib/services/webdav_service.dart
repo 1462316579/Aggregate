@@ -166,6 +166,7 @@ class WebDavService {
 /// 备份/恢复工具：把当前源列表 + 播放设置 + 收藏/历史打包成一个 JSON。
 class BackupService {
   BackupService(this._config, this._sources);
+  // ignore: unused_field
   final AppConfig _config;
   final List<SourceDefinition> _sources;
 
@@ -177,17 +178,17 @@ class BackupService {
       'createdAt': DateTime.now().toIso8601String(),
       'sources': _sources.map((e) => e.toMap()).toList(),
       'settings': <String, dynamic>{
-        'language': _config.language,
-        'theme': _config.theme,
-        'tmdbKey': _config.tmdbKey,
-        'autoCheckUpdate': _config.autoCheckUpdate,
-        'nsfw': _config.nsfw,
-        'webdavEnabled': _config.webdavEnabled,
-        'webdavHost': _config.webdavHost,
-        'webdavUsername': _config.webdavUsername,
+        'language': AppConfig.language,
+        'theme': AppConfig.theme,
+        'tmdbKey': AppConfig.tmdbKey,
+        'autoCheckUpdate': AppConfig.autoCheckUpdate,
+        'nsfw': AppConfig.nsfw,
+        'webdavEnabled': AppConfig.webdavEnabled,
+        'webdavHost': AppConfig.webdavHost,
+        'webdavUsername': AppConfig.webdavUsername,
         // 密码故意不写入云端备份，恢复后由用户重新填入
         'webdavPassword': '',
-        'webdavPath': _config.webdavPath,
+        'webdavPath': AppConfig.webdavPath,
       },
       'favorites': _config.favorites,
       'history': _config.history,
@@ -221,32 +222,32 @@ class BackupService {
         'format': 'hongxi-sources',
         'sources': sources,
       }));
-      await _config.setSources(imported);
+      await AppConfig.saveSources(imported);
     }
 
     // 设置项
     final settings = root['settings'];
     if (settings is Map) {
       final s = Map<String, dynamic>.from(settings);
-      if (s['language'] is String) await _config.setLanguage(s['language'] as String);
-      if (s['theme'] is String) await _config.setTheme(s['theme'] as String);
-      if (s['tmdbKey'] is String) await _config.setTmdbKey(s['tmdbKey'] as String);
-      if (s['autoCheckUpdate'] is bool) await _config.setAutoCheckUpdate(s['autoCheckUpdate'] as bool);
-      if (s['nsfw'] is bool) await _config.setNsfw(s['nsfw'] as bool);
-      if (s['webdavEnabled'] is bool) await _config.setWebdavEnabled(s['webdavEnabled'] as bool);
-      if (s['webdavHost'] is String) await _config.setWebdavHost(s['webdavHost'] as String);
-      if (s['webdavUsername'] is String) await _config.setWebdavUsername(s['webdavUsername'] as String);
-      if (s['webdavPath'] is String) await _config.setWebdavPath(s['webdavPath'] as String);
+      if (s['language'] is String) await AppConfig.setLanguage(s['language'] as String);
+      if (s['theme'] is String) await AppConfig.setTheme(s['theme'] as String);
+      if (s['tmdbKey'] is String) await AppConfig.setTmdbKey(s['tmdbKey'] as String);
+      if (s['autoCheckUpdate'] is bool) await AppConfig.setAutoCheckUpdate(s['autoCheckUpdate'] as bool);
+      if (s['nsfw'] is bool) await AppConfig.setNsfw(s['nsfw'] as bool);
+      if (s['webdavEnabled'] is bool) await AppConfig.setWebdavEnabled(s['webdavEnabled'] as bool);
+      if (s['webdavHost'] is String) await AppConfig.setWebdavHost(s['webdavHost'] as String);
+      if (s['webdavUsername'] is String) await AppConfig.setWebdavUsername(s['webdavUsername'] as String);
+      if (s['webdavPath'] is String) await AppConfig.setWebdavPath(s['webdavPath'] as String);
     }
 
     // 收藏与历史
     if (root['favorites'] is List) {
-      await _config.setFavorites(
+      await AppConfig.setFavorites(
         (root['favorites'] as List).cast<Map<String, dynamic>>(),
       );
     }
     if (root['history'] is List) {
-      await _config.setHistory(
+      await AppConfig.setHistory(
         (root['history'] as List).cast<Map<String, dynamic>>(),
       );
     }

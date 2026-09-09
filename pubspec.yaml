@@ -10,10 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   provider: ^6.1.2
   http: ^1.2.0
   shared_preferences: ^2.2.0
   video_player: ^2.8.0
+  audioplayers: ^5.2.1
   intl: ^0.18.1
 
 dev_dependencies:

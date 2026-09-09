@@ -77,7 +77,7 @@ class HongXiApp extends StatelessWidget {
       colorSchemeSeed: const Color(0xff3f51b5),
       scaffoldBackgroundColor: dark ? const Color(0xff17181c) : const Color(0xfff7f7f7),
       appBarTheme: const AppBarTheme(centerTitle: false, elevation: 0),
-      cardTheme: CardThemeData(
+      cardTheme: CardTheme(
         elevation: 1,
         color: dark ? const Color(0xff24262b) : Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
