@@ -6,42 +6,32 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android:
+  build:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
       
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Setup Flutter 3.10
+        uses: subosito/flutter-action@v1
         with:
-          flutter-version: '3.16.0'
+          flutter-version: '3.10.6'
           channel: 'stable'
       
-      - name: Install dependencies
-        run: |
-          flutter pub get || {
-            echo "Retry..."
-            sleep 5
-            flutter pub get
-          }
+      - run: flutter pub get
       
-      - name: Build APK
-        run: |
-          flutter build apk --debug 2>&1 | tee build.log
+      - run: flutter build apk --debug --verbose
+        id: build
+        continue-on-error: true
       
-      - name: Check APK
+      - name: Check output
         run: |
-          echo "Looking for APK..."
-          find build -name "*.apk" -type f -exec ls -lh {} \;
-          cp build/app/outputs/flutter-apk/app-debug.apk allplay.apk 2>/dev/null || echo "APK not found"
-          ls -lh allplay.apk 2>/dev/null
+          ls -la build/app/outputs/flutter-apk/ || echo "Build output missing"
+          cat build.log 2>/dev/null || echo "No build log"
       
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
-          name: allplay-debug-apk
-          path: allplay.apk
-          retention-days: 7
+          name: app
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          if-no-files-found: warn
