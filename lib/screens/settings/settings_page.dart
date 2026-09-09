@@ -266,7 +266,7 @@ class _SettingsPageState extends State<SettingsPage> {
     ));
   }
 
-  void _textDialog(String title, String value, bool saveProxy) {
+  Future<void> _textDialog(String title, String value, bool saveProxy) async {
     final controller = TextEditingController(text: value);
     showDialog<void>(context: context, builder: (ctx) => AlertDialog(
       title: Text(title), content: TextField(controller: controller),

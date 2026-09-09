@@ -43,7 +43,7 @@ class _SearchPageState extends State<SearchPage> with SingleTickerProviderStateM
     if (query.isEmpty) return;
     setState(() => _loading = true);
     final provider = context.read<SourceProvider>();
-    await provider.addSearchHistory(query);
+    provider.addSearchHistory(query);
     final result = await provider.search(query, type: _mode.type);
     if (!mounted) return;
     setState(() {

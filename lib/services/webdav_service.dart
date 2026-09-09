@@ -152,6 +152,7 @@ class WebDavService {
         result.add(parts.last);
       }
     }
+    result.sort();
     return result;
   }
 

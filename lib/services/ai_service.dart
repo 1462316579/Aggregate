@@ -30,7 +30,6 @@ class AIService {
           ],
           'model': model,
         }),
-        timeout: const Duration(seconds: 30),
       );
 
       if (response.statusCode == 200) {
