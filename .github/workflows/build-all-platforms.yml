@@ -1,224 +1,294 @@
-name: Build All Platforms
+name: Build All Platforms and Release
 
 on:
   push:
     branches: [main]
-    tags: ['v*']
   workflow_dispatch:
 
 permissions:
   contents: write
 
+env:
+  FLUTTER_VERSION: 3.22.0
+  APP_NAME: hongxi
+  DISPLAY_NAME: 宏曦聚合
+  PACKAGE_NAME: juhe.homes.app2026
+
 jobs:
-  # ============ Android (APK + AAB) ============
   android:
+    name: Android Universal APK
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
+          distribution: zulu
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
           cache: true
+
+      - name: Complete Android project scaffolding
+        run: flutter create --no-pub --platforms=android --org juhe.homes --project-name app2026 --overwrite .
+
       - name: Install dependencies
         run: flutter pub get
-      - name: Build APK (universal)
+
+      - name: Build universal APK
         run: flutter build apk --release
-      - name: Build App Bundle (AAB)
-        run: flutter build appbundle --release
-      - name: Upload Android Artifacts
+
+      - name: Package APK
+        run: cp build/app/outputs/flutter-apk/app-release.apk hongxi-android-universal.apk
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: android
-          path: |
-            build/app/outputs/flutter-apk/app-release.apk
-            build/app/outputs/bundle/release/app-release.aab
-          retention-days: 30
+          path: hongxi-android-universal.apk
+          if-no-files-found: error
 
-  # ============ Web ============
-  web:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
-          cache: true
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Build Web
-        run: flutter build web --release
-      - name: Upload Web Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web
-          path: build/web/
-          retention-days: 30
-
-  # ============ Linux ============
-  linux:
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Linux deps
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
-          cache: true
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Build Linux
-        run: flutter build linux --release
-      - name: Package Linux tar.gz
-        run: |
-          cd build/linux/x64/release/bundle
-          tar -czf ../../../../allplay-linux-x64.tar.gz .
-      - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: linux
-          path: allplay-linux-x64.tar.gz
-          retention-days: 30
-
-  # ============ Windows ============
-  windows:
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
-          cache: true
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Build Windows
-        run: flutter build windows --release
-      - name: Package Windows zip
-        run: |
-          Compress-Archive -Path build\windows\x64\runner\Release\* -DestinationPath allplay-windows-x64.zip
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows
-          path: allplay-windows-x64.zip
-          retention-days: 30
-
-  # ============ macOS ============
-  macos:
-    runs-on: macos-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
-          cache: true
-      - name: Install dependencies
-        run: flutter pub get
-      - name: Build macOS
-        run: flutter build macos --release
-      - name: Package macOS dmg
-        run: |
-          hdiutil create -volname "AllPlay" -srcfolder build/macos/Build/Products/Release/allplay.app -ov -format UDZO allplay-macos.dmg
-      - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: macos
-          path: allplay-macos.dmg
-          retention-days: 30
-
-  # ============ iOS (IPA for TestFlight) ============
   ios:
-    runs-on: macos-latest
-    timeout-minutes: 90
+    name: iOS Unsigned IPA
+    runs-on: macos-13
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0'
-          channel: 'stable'
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
           cache: true
+
+      - name: Complete iOS project scaffolding
+        run: flutter create --no-pub --platforms=ios --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Set iOS display name
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" ios/Runner/Info.plist || true
+
       - name: Install dependencies
         run: flutter pub get
-      - name: Build iOS (Release, no codesign for artifact)
+
+      - name: Build unsigned iOS app
+        run: flutter build ios --release --no-codesign
+
+      - name: Package unsigned IPA
         run: |
-          flutter build ios --release --no-codesign
-      - name: Package iOS IPA (unsigned)
-        run: |
-          mkdir -p Payload
-          cp -R build/ios/iphoneos/Runner.app Payload/
-          zip -r allplay-ios.ipa Payload
-      - name: Upload iOS Artifact
+          rm -rf Payload
+          mkdir Payload
+          cp -R build/ios/iphoneos/Runner.app Payload/Runner.app
+          zip -qry hongxi-ios-unsigned.ipa Payload
+
+      - name: Upload iOS package
         uses: actions/upload-artifact@v4
         with:
           name: ios
-          path: allplay-ios.ipa
-          retention-days: 30
+          path: hongxi-ios-unsigned.ipa
+          if-no-files-found: error
 
-  # ============ Create GitHub Release (after all builds) ============
-  release:
-    needs: [android, web, linux, windows, macos, ios]
+  web:
+    name: Web and Apple TV Web Package
     runs-on: ubuntu-latest
-    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: Download all artifacts
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Complete Web project scaffolding
+        run: flutter create --no-pub --platforms=web --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Web
+        run: flutter build web --release --base-href /
+
+      - name: Package Web and tvOS Web
+        run: |
+          tar -czf hongxi-web.tar.gz -C build/web .
+          cp hongxi-web.tar.gz hongxi-tvos-web.tar.gz
+
+      - name: Upload Web packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: |
+            hongxi-web.tar.gz
+            hongxi-tvos-web.tar.gz
+          if-no-files-found: error
+
+  windows:
+    name: Windows Portable Package
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Complete Windows project scaffolding
+        run: flutter create --no-pub --platforms=windows --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Package Windows portable archive
+        shell: pwsh
+        run: Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath hongxi-windows-x64.zip -Force
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: hongxi-windows-x64.zip
+          if-no-files-found: error
+
+  macos:
+    name: macOS Portable App
+    runs-on: macos-13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Complete macOS project scaffolding
+        run: flutter create --no-pub --platforms=macos --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Set macOS display name
+        run: /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName $DISPLAY_NAME" macos/Runner/Configs/AppInfo.xcconfig || true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build macOS app
+        run: flutter build macos --release --no-codesign
+
+      - name: Package macOS app
+        run: ditto -c -k --sequesterRsrc --keepParent build/macos/Build/Products/Release/Runner.app hongxi-macos-app.zip
+
+      - name: Upload macOS package
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: hongxi-macos-app.zip
+          if-no-files-found: error
+
+  linux:
+    name: Linux Portable Package
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Complete Linux project scaffolding
+        run: flutter create --no-pub --platforms=linux --org juhe.homes --project-name app2026 --overwrite .
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Linux
+        run: flutter build linux --release
+
+      - name: Package Linux bundle
+        run: tar -czf hongxi-linux-x64.tar.gz -C build/linux/x64/release/bundle .
+
+      - name: Upload Linux package
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: hongxi-linux-x64.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    needs: [android, ios, web, windows, macos, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all platform packages
         uses: actions/download-artifact@v4
         with:
-          path: artifacts
-      - name: List downloaded artifacts
-        run: |
-          find artifacts -type f -name "*.apk" -o -name "*.aab" -o -name "*.tar.gz" -o -name "*.zip" -o -name "*.dmg" -o -name "*.ipa" | sort
-      - name: Create Release
+          path: release-files
+          merge-multiple: true
+
+      - name: Add source archive
+        run: tar -czf release-files/hongxi-source.tar.gz --exclude=.git --exclude=build --exclude=release-files .
+
+      - name: List release files
+        run: ls -lah release-files
+
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}
-          name: AllPlay Release ${{ github.run_number }} (All Platforms)
-          draft: false
-          prerelease: false
-          files: |
-            artifacts/android/app-release.apk
-            artifacts/android/app-release.aab
-            artifacts/web/**
-            artifacts/linux/allplay-linux-x64.tar.gz
-            artifacts/windows/allplay-windows-x64.zip
-            artifacts/macos/allplay-macos.dmg
-            artifacts/ios/allplay-ios.ipa
+          tag_name: v1.0.0-build.${{ github.run_number }}
+          name: 宏曦聚合 v1.0.0 全平台版
+          generate_release_notes: true
           body: |
-            ## AllPlay Multi-Platform Release ${{ github.run_number }}
-            
-            **Build Time:** ${{ github.event.head_commit.timestamp }}
-            **Flutter Version:** 3.16.0
-            **Commit:** ${{ github.sha }}
-            
-            ### 📦 Downloads
-            | Platform | File | Install Notes |
-            |----------|------|---------------|
-            | Android | `app-release.apk` | Universal ARM (arm64-v8a + armeabi-v7a) |
-            | Android | `app-release.aab` | For Play Store upload |
-            | Web | `web/` folder | Deploy to any static host |
-            | Linux | `allplay-linux-x64.tar.gz` | Extract & run `./allplay` |
-            | Windows | `allplay-windows-x64.zip` | Extract & run `allplay.exe` |
-            | macOS | `allplay-macos.dmg` | Open DMG, drag to Applications |
-            | iOS | `allplay-ios.ipa` | Unsigned - install via TestFlight or re-sign |
-            
-            ### 🔧 Build Details
-            - All builds are **Release** mode (optimized, no debug symbols)
-            - Android APK is **universal** (both ARM architectures)
-            - iOS IPA is **unsigned** - requires re-signing for device install
-            
-            ### 📱 Installation
-            1. Download the file for your platform
-            2. Follow platform-specific install steps above
-            3. Enjoy AllPlay!
+            # 宏曦聚合 v1.0.0 全平台版
+
+            构建提交: `${{ github.sha }}`
+
+            ## 下载说明
+
+            - `hongxi-android-universal.apk`：Android 手机、平板、Android TV 通用 APK
+            - `hongxi-ios-unsigned.ipa`：iOS 未签名包，需要使用 Apple 证书重新签名后安装
+            - `hongxi-tvos-web.tar.gz`：Apple TV 可通过浏览器使用的 tvOS Web 版
+            - `hongxi-windows-x64.zip`：Windows x64 免安装便携版
+            - `hongxi-macos-app.zip`：macOS App 便携包，首次运行可能需要允许未签名应用
+            - `hongxi-linux-x64.tar.gz`：Linux x64 便携包
+            - `hongxi-web.tar.gz`：Web 版，解压到任意静态网站服务器
+            - `hongxi-source.tar.gz`：源代码包
+
+            ## 应用信息
+
+            - 应用名称：宏曦聚合
+            - Android applicationId：`juhe.homes.app2026`
+            - Android TV：与 Android 通用 APK 共用
+            - Apple TV：当前提供 Web 运行包；原生 tvOS 需要单独 Apple Developer 签名工程
+          files: release-files/*
+          fail_on_unmatched_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
