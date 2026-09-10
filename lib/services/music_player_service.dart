@@ -175,7 +175,7 @@ class MusicPlayerService extends ChangeNotifier {
       case RepeatMode.one:
         _repeatMode = RepeatMode.none;
     }
-    _player.setRepeatMode(_repeatMode);
+    // _player.setRepeatMode is not available in media_kit
     notifyListeners();
   }
 

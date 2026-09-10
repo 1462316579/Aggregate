@@ -115,10 +115,6 @@ class UnifiedContent {
       pic: cover,
       desc: description,
       category: category,
-      year: year,
-      area: area,
-      director: director,
-      actor: actor ?? author,
     );
   }
 }

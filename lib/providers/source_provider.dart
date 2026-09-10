@@ -40,7 +40,7 @@ class SourceProvider extends ChangeNotifier {
     final activeKey = await AppConfig.getActiveSourceKey();
     if (activeKey != null) {
       _activeSource = _sources.firstWhere(
-        (s) => s.key == activeKey, orElse: () => _sources.isNotEmpty ? _sources.first : _sources);
+        (s) => s.key == activeKey, orElse: () => _sources.first);
     } else if (_sources.isNotEmpty) {
       _activeSource = _sources.first;
     }
