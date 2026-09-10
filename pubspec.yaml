@@ -25,7 +25,7 @@ dependencies:
   # 视频播放
   video_player: ^2.8.6
   media_kit: ^1.1.10+1
-  media_kit_video: ^2.0.0
+  media_kit_video: ^1.2.5
   media_kit_libs_video: ^1.0.4
   
   # 解析与爬虫
@@ -68,3 +68,5 @@ flutter:
 
 dependency_overrides:
   screen_brightness_android: 2.1.2
+  media_kit_video:
+    path: packages/media_kit_video_fixed

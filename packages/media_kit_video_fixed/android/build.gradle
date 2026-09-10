@@ -1,0 +1,43 @@
+group 'com.alexmercerind.media_kit_video'
+version '1.0'
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.0'
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+android {
+    namespace 'com.alexmercerind.media_kit_video'
+
+    compileSdkVersion 33
+    ndkVersion "25.2.9519653"
+
+    defaultConfig {
+        minSdkVersion 21
+        targetSdkVersion 33
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+}
