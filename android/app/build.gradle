@@ -1,7 +1,4 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-
+// Define flutterRoot BEFORE any apply from
 def flutterRoot = rootProject.ext.flutterRoot
 if (flutterRoot == null) {
     flutterRoot = System.getenv("FLUTTER_ROOT")
@@ -9,6 +6,15 @@ if (flutterRoot == null) {
 if (flutterRoot == null) {
     flutterRoot = "/opt/hostedtoolcache/flutter/stable-3.22.0-x64/flutter"
 }
+
+// Define localProperties before any usage
+def localPropertiesFile = rootProject.file('local.properties')
+def localProperties = new Properties()
+localPropertiesFile.withReader('UTF-8') { localProperties.load(it) }
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply from: "${flutterRoot}/packages/flutter_tools/gradle/flutter.gradle"
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
