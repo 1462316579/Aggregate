@@ -69,23 +69,13 @@ class LiveChannel {
         }
       } else if (line.startsWith('http')) {
         channels.add(LiveChannel(
-          name: channels.length + 1,
+          name: '${channels.length + 1}',
           url: line,
           group: currentGroup,
-        ).copyWithIndex(channels.length + 1));
+        ));
       }
     }
     
     return channels;
   }
-}
-
-/// 扩展方法用于设置无名称频道的名称
-extension _LiveChannelHelper on LiveChannel {
-  LiveChannel copyWithIndex(int index) => LiveChannel(
-    name: '频道$index',
-    logo: logo,
-    url: url,
-    group: group,
-  );
 }
