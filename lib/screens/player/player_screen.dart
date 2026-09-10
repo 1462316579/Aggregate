@@ -2,6 +2,7 @@
 /// TV遥控器 / 手势 / 键盘 / 投屏 / 跳过片头片尾
 import 'package:flutter/material.dart';
 import 'dart:io';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:media_kit/media_kit.dart';

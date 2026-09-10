@@ -9,6 +9,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import '../models/sniff_result.dart';
 class VideoSnifferService {
   // ════════════════════════════════════════
   //  视频 URL 正则模式库

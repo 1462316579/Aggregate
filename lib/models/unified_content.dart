@@ -1,3 +1,4 @@
+import 'video_content.dart';
 /// 统一内容类型枚举
 enum MediaType {
   video('视频'),
@@ -110,22 +111,14 @@ class UnifiedContent {
   VideoContent toVideoContent() {
     return VideoContent(
       id: id,
-      name: name,
-      cover: cover,
+      name: title,
+      pic: cover,
+      desc: description,
+      category: category,
       year: year,
       area: area,
       director: director,
-      actor: actor,
-      desc: desc,
-      typeId: typeId,
-      typeName: typeName,
-      status: status,
-      lang: lang,
-      total: total,
-      last: last,
-      vodPlayFrom: vodPlayFrom,
-      vodPlayUrl: vodPlayUrl,
-      vodPlayNote: vodPlayNote,
+      actor: actor ?? author,
     );
   }
 }

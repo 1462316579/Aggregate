@@ -106,7 +106,7 @@ class CastService extends ChangeNotifier {
         socket.close();
       });
 
-      socket.listen((RawDatagramSocket event) {
+      socket.listen((RawSocketEvent event) {
         final datagram = event.data;
         if (datagram != null) {
           final response = String.fromCharCodes(datagram);

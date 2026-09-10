@@ -111,7 +111,7 @@ class MusicPlayerService extends ChangeNotifier {
     _playlist = List.from(tracks);
     _currentIndex = startIndex;
     if (_playlist.isNotEmpty) {
-      await play(source, _playlist[_currentIndex]);
+      await _player.open(Media(_playlist[_currentIndex].playUrl ?? ""));
     }
   }
 
@@ -119,7 +119,7 @@ class MusicPlayerService extends ChangeNotifier {
   void playOrPause() => _player.playOrPause();
 
   void pause() => _player.pause();
-  void resume() => _player.open(player.playable);
+  void resume() => _player.open(_player.playable);
 
   /// 下一曲
   Future<void> next() async {
@@ -175,11 +175,7 @@ class MusicPlayerService extends ChangeNotifier {
       case RepeatMode.one:
         _repeatMode = RepeatMode.none;
     }
-    _player.setRepeatMode(_repeatMode == RepeatMode.one
-        ? RepeatMode
-        : _repeatMode == RepeatMode.all
-            ? RepeatMode
-            : RepeatMode.none);
+    _player.setRepeatMode(_repeatMode);
     notifyListeners();
   }
 
