@@ -24,11 +24,10 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.allplay.app"
-    compileSdkVersion 33
-    ndkVersion "25.2.9519653"
+    compileSdk flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
-        coreLibraryDesugaringEnabled true
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
@@ -43,11 +42,10 @@ android {
 
     defaultConfig {
         applicationId "com.allplay.app"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdk flutter.minSdkVersion
+        targetSdk flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        multiDexEnabled true
     }
 
     buildTypes {
@@ -65,8 +63,4 @@ android {
 
 flutter {
     source '../..'
-}
-
-dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.4'
 }
