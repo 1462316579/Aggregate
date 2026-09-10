@@ -4,6 +4,7 @@ import '../../models/video_content.dart';
 import '../../models/unified_content.dart';
 import '../../models/video_source.dart';
 import '../../providers/source_provider.dart';
+import '../../services/spider_service_v2.dart';
 import '../detail/detail_screen.dart';
 import '../comic/comic_detail_screen.dart';
 import '../novel/novel_detail_screen.dart';

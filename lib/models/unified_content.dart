@@ -24,6 +24,9 @@ class UnifiedContent {
   final MediaType mediaType;
   final String? status;     // 连载中/完结/...
   final String? year;
+  final String? area;       // 地区
+  final String? director;   // 导演
+  final String? actor;      // 演员
   final String? extra;      // 扩展字段 (JSON字符串)
 
   UnifiedContent({
@@ -37,13 +40,17 @@ class UnifiedContent {
     required this.mediaType,
     this.status,
     this.year,
+    this.area,
+    this.director,
+    this.actor,
     this.extra,
   });
 
   Map<String, dynamic> toJson() => {
     'id': id, 'title': title, 'cover': cover, 'description': description,
     'author': author, 'category': category, 'sourceKey': sourceKey,
-    'mediaType': mediaType.name, 'status': status, 'year': year, 'extra': extra,
+    'mediaType': mediaType.name, 'status': status, 'year': year,
+    'area': area, 'director': director, 'actor': actor, 'extra': extra,
   };
 
   factory UnifiedContent.fromVideo(Map<String, dynamic> json, String sourceKey) => UnifiedContent(
