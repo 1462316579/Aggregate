@@ -9,19 +9,10 @@ pluginManagement {
         return flutterSdk
     }()
 
-    includeBuild("$flutterSdkPath/.pub-cache/hosted/pub.dev/flutter_plugin_android_lifecycle-2.0.17")
-    includeBuild("$flutterSdkPath/.pub-cache/hosted/pub.dev/connectivity_plus-5.0.2")
-    includeBuild("$flutterSdkPath/.pub-cache/hosted/pub.dev/package_info_plus-6.0.0")
-
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
         maven { url 'https://storage.googleapis.com/download.flutter.io' }
     }
-}
-
-dependencies {
-    classpath "com.android.tools.build:gradle:8.3.2"
-    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24"
 }
