@@ -126,7 +126,7 @@ class CastDeviceSheet extends StatelessWidget {
                 child: const Text('取消'),
               ),
               TextButton.icon(
-                onPressed: () => castService.scan(),
+                onPressed: () => castService.scan(5),
                 icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('搜索'),
               ),
