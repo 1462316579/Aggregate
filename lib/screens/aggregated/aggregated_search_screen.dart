@@ -463,7 +463,7 @@ class _AggregatedSearchScreenState extends State<AggregatedSearchScreen>
     switch (item.mediaType) {
       case MediaType.video:
         Navigator.push(context, MaterialPageRoute(
-          builder: (_) => DetailScreen(video: item.toVideoContent()))));
+          builder: (_) => DetailScreen(video: item.toVideoContent())));
       case MediaType.comic:
         Navigator.push(context, MaterialPageRoute(
           builder: (_) => ComicDetailScreen(content: item)));

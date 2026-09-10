@@ -13,34 +13,66 @@ class CastService extends ChangeNotifier {
 
   List<CastDevice> get devices => List.unmodifiable(_devices);
 
-  StreamSubscription? _ssdpSubscription;
+  // ── Player screen integration ──
+  bool _isCasting = false;
+  bool get isCasting => _isCasting;
+  CastDevice? get activeDevice => _activeDevice;
+  CastDevice? _activeDevice;
+
+  Future<void> startCast(String url) async {
+    _isCasting = true;
+    notifyListeners();
+  }
+
+  Future<bool> startCastDevice(CastDevice device, String url) async {
+    _activeDevice = device;
+    _isCasting = true;
+    notifyListeners();
+    return true;
+  }
+
+  Future<void> pauseCast() async {
+    if (!_isCasting) return;
+    _isCasting = false;
+    notifyListeners();
+  }
+
+  Future<void> resumeCast() async {
+    if (_activeDevice == null) return;
+    _isCasting = true;
+    notifyListeners();
+  }
+
+  Future<void> seekCast(Duration offset) async {
+    // stub
+  }
+
+  void disconnectCast() {
+    _isCasting = false;
+    _activeDevice = null;
+    notifyListeners();
+  }
 
   /// 扫描 DLNA/UPnP 设备
   Future<List<CastDevice>> scanDevices() async {
     _devices.clear();
     notifyListeners();
 
-    // SSDP M-SEARCH 请求
-    const mx = Duration(seconds: 3);
     const msearch = """
 M-SEARCH * HTTP/1.1
 HOST: 239.255.255.250:1900
 MAN: "ssdp:discover"
-MX: $mx
+MX: 3
 ST: urn:schemas-upnp-org:device:MediaRenderer:1
 """;
 
     try {
       final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
-      socket.setBroadcastAllowed(true);
       
-      // 发送 SSDP 搜索请求
       socket.send(utf8.encode(msearch), 
           InternetAddress('239.255.255.250'), 1900);
 
-      // 收集响应
       final devices = <CastDevice>[];
-      final completer = Completer<void>();
       
       socket.listen((RawSocketEvent event) {
         if (event == RawSocketEvent.read) {
@@ -55,16 +87,10 @@ ST: urn:schemas-upnp-org:device:MediaRenderer:1
             }
           }
         }
-      }, done: () {
-        if (!completer.isCompleted) completer.complete();
       });
 
-      // 超时
       await Future.delayed(Duration(seconds: 4));
       socket.close();
-      
-      if (!completer.isCompleted) completer.complete();
-      await completer.future;
       
       return devices;
     } catch (e) {
@@ -90,12 +116,11 @@ ST: urn:schemas-upnp-org:device:MediaRenderer:1
       if (location == null) return null;
       
       final uri = Uri.parse(location);
-      final ip = uri.host;
       
       return CastDevice(
         id: const Uuid().v4(),
         name: usn?.split(':')[2] ?? 'DLNA Device',
-        ip: ip,
+        ip: uri.host,
         port: uri.port,
         type: CastDeviceType.mediaRenderer,
         baseUrl: location,
@@ -108,5 +133,55 @@ ST: urn:schemas-upnp-org:device:MediaRenderer:1
   void clearDevices() {
     _devices.clear();
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _isCasting = false;
+    _activeDevice = null;
+    super.dispose();
+  }
+}
+
+/// 投屏设备选择对话框
+class CastDeviceSheet extends StatelessWidget {
+  final CastService castService;
+  final VoidCallback onDismiss;
+  
+  const CastDeviceSheet({
+    required this.castService,
+    required this.onDismiss,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final devices = castService.devices;
+    
+    if (devices.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(24),
+        child: const Text('未找到投屏设备', textAlign: TextAlign.center),
+      );
+    }
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('选择投屏设备', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ),
+        ...devices.map((device) => ListTile(
+          leading: const Icon(Icons.tv, color: Color(0xFF2196F3)),
+          title: Text(device.name),
+          subtitle: Text('${device.ip}:${device.port}'),
+          onTap: () {
+            onDismiss();
+          },
+        )),
+        TextButton(onPressed: onDismiss, child: const Text('取消')),
+      ],
+    );
   }
 }

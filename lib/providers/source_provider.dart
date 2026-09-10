@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
-import '../config/app_config.dart';
+import 'package:provider/provider.dart';
+import '../services/app_config.dart';
 import '../models/video_source.dart';
 import '../models/video_content.dart';
 import '../models/unified_content.dart';
@@ -126,6 +126,45 @@ class SourceProvider extends ChangeNotifier {
 
   /// 刷新
   Future<void> refresh() => _init();
+
+  // ── 源管理方法 ──
+
+  /// 批量添加源
+  Future<void> addSources(List<VideoSource> sources) async {
+    _sources.addAll(sources);
+    await AppConfig.saveSources(_sources);
+    if (_activeSource == null && _sources.isNotEmpty) {
+      _activeSource = _sources.first;
+    }
+    notifyListeners();
+  }
+
+  /// 添加单个源
+  Future<void> addSource(VideoSource source) async {
+    await addSources([source]);
+  }
+
+  /// 移除源
+  Future<void> removeSource(String key) async {
+    _sources.removeWhere((s) => s.key == key);
+    if (_activeSource?.key == key) {
+      _activeSource = _sources.isNotEmpty ? _sources.first : null;
+    }
+    await AppConfig.saveSources(_sources);
+    notifyListeners();
+  }
+
+  /// 设置活动源
+  void setActiveSource(VideoSource source) {
+    _activeSource = source;
+    AppConfig.saveActiveSourceKey(source.key);
+    notifyListeners();
+  }
+
+  /// 从配置 URL 刷新
+  Future<void> refreshFromConfig(String url) async {
+    await loadFromUrl(url);
+  }
 
   bool _loading = false;
 }

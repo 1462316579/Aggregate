@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../models/video_content.dart';
-import '../models/unified_content.dart';
-import '../models/video_source.dart';
-import '../providers/source_provider.dart';
-import '../screens/detail/detail_screen.dart';
-import '../screens/aggregated/aggregated_search_screen.dart';
+import '../../models/video_content.dart';
+import '../../models/unified_content.dart';
+import '../../models/video_source.dart';
+import '../../providers/source_provider.dart';
+import '../detail/detail_screen.dart';
+import '../comic/comic_detail_screen.dart';
+import '../novel/novel_detail_screen.dart';
+import '../music/music_detail_screen.dart';
+import '../comic/comic_detail_screen.dart';
 
 /// 搜索页面
 class SearchScreen extends StatefulWidget {
