@@ -11,10 +11,25 @@ class SourceProvider extends ChangeNotifier {
   late List<VideoSource> _sources;
   VideoSource? _activeSource;
   bool _loading = false;
+  String? _error;
 
   List<VideoSource> get sources => _sources;
   VideoSource? get activeSource => _activeSource;
   bool get isLoading => _loading;
+  String? get error => _error;
+
+  /// 漫画源
+  List<VideoSource> get comicSources =>
+      _sources.where((s) => s.mediaType == 'comic').toList();
+  /// 小说源
+  List<VideoSource> get novelSources =>
+      _sources.where((s) => s.mediaType == 'novel').toList();
+  /// 音乐源
+  List<VideoSource> get musicSources =>
+      _sources.where((s) => s.mediaType == 'music').toList();
+  /// 视频源
+  List<VideoSource> get videoSources =>
+      _sources.where((s) => s.mediaType == 'video').toList();
 
   SourceProvider() {
     _init();
@@ -25,6 +40,7 @@ class SourceProvider extends ChangeNotifier {
 
   Future<void> _init() async {
     _loading = true;
+    _error = null;
     notifyListeners();
 
     _sources = await AppConfig.getSources();
@@ -41,10 +57,12 @@ class SourceProvider extends ChangeNotifier {
     // 尝试在线刷新
     try {
       final configUrl = await AppConfig.getConfigUrl();
-      if (configUrl != null) {
+      if (configUrl != null && configUrl.isNotEmpty) {
         await loadFromUrl(configUrl);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('SourceProvider init error: $e');
+    }
 
     _loading = false;
     notifyListeners();
@@ -53,12 +71,16 @@ class SourceProvider extends ChangeNotifier {
   /// 从 URL 加载源
   Future<void> loadFromUrl(String url) async {
     _loading = true;
+    _error = null;
     notifyListeners();
     try {
-      final remote = await SpiderServiceV2.loadSourcesFromUrl(url);
-      await addSources(remote);
+      final remote = await SpiderServiceV2.getSources(url);
+      if (remote != null && remote.isNotEmpty) {
+        await addSources(remote);
+      }
     } catch (e) {
-      rethrow;
+      _error = '加载配置失败: $e';
+      debugPrint('SourceProvider loadFromUrl error: $e');
     } finally {
       _loading = false;
       notifyListeners();
@@ -74,38 +96,28 @@ class SourceProvider extends ChangeNotifier {
   }
 
   /// 获取直播频道
-  Future<List<LiveChannel>> getLiveChannels(String url) async {
+  Future<List<Map<String, String>>> getLiveChannels(String url) async {
     return SpiderServiceV2.getLiveChannels(url);
   }
 
   /// 获取视频详情
   Future<VideoContent?> getDetail(String id) async {
     if (_activeSource == null || _activeSource!.mediaType != 'video') return null;
-    final item = await SpiderServiceV2.getDetailVideo(_activeSource!, id);
-    return item != null ? item.toVideoContent() : null;
+    final detail = await SpiderServiceV2.getVideoDetail(_activeSource!, id);
+    if (detail == null) return null;
+    // Convert Map to VideoContent
+    return VideoContent.fromJson(detail, sourceKey: _activeSource!.key);
   }
 
   /// 获取播放链接
   Future<String?> getPlayUrl(String id, {String? from, String? server}) async {
     if (_activeSource == null) return null;
-    return SpiderServiceV2.getPlayUrl(_activeSource!, id, from: from, server: server);
-  }
-
-  /// 获取漫画章节
-  Future<List<ComicChapter>> getComicChapters(String id) async {
-    if (_activeSource == null) return [];
-    return SpiderServiceV2.getComicChapters(_activeSource!, id);
-  }
-
-  /// 获取小说章节
-  Future<List<NovelChapter>> getNovelChapters(String id) async {
-    if (_activeSource == null) return [];
-    return SpiderServiceV2.getNovelChapters(_activeSource!, id);
+    return SpiderServiceV2.parseVideoPlayUrl(_activeSource!, id);
   }
 
   /// 搜索
   Future<AggregatedSearchResult> searchAll(String keyword, {int page = 1}) async {
-    return SpiderServiceV2.searchAll(keyword, page: page);
+    return SpiderServiceV2.searchAll(_sources, keyword, page: page);
   }
 
   /// 刷新
@@ -141,7 +153,7 @@ class SourceProvider extends ChangeNotifier {
   /// 设置活动源
   void setActiveSource(VideoSource source) {
     _activeSource = source;
-    AppConfig.saveActiveSourceKey(source.key);
+    AppConfig.setActiveSource(source.key);
     notifyListeners();
   }
 

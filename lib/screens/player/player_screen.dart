@@ -84,8 +84,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   Future<void> _initPlayer() async {
     try {
-      final realUrl = await SpiderService.parsePlayUrl(
-          widget.source ?? VideoSource(key: '', name: '', api: ''), widget.url);
+      final source = widget.source ?? VideoSource(key: '', name: '', api: '');
+      final realUrl = await SpiderService.parsePlayUrl(source, widget.url);
       if (realUrl != null) {
         await _player.open(Media(realUrl));
         setState(() => _isLoading = false);
