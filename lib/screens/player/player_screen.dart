@@ -90,7 +90,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
         await _player.open(Media(realUrl));
         setState(() => _isLoading = false);
         // 投屏同步
-        if (_castService.isCasting) _castService.startCast(realUrl);
+        if (_castService.isCasting) _castService.startCastUrl(realUrl);
       } else {
         setState(() { _error = '无法解析播放地址'; _isLoading = false; });
       }
