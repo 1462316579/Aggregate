@@ -119,7 +119,7 @@ class MusicPlayerService extends ChangeNotifier {
   void playOrPause() => _player.playOrPause();
 
   void pause() => _player.pause();
-  void resume() => _player.open(_player.playable);
+  void resume() => _player.play();
 
   /// 下一曲
   Future<void> next() async {

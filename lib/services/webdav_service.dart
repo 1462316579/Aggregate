@@ -206,7 +206,7 @@ class WebDavService {
         final client = http.Client();
         final request = http.Request('PROPFIND', uri)..headers.addAll(headers);
         if (body != null) request.body = body;
-        return client.send(request);
+        return client.send(request).then((s) => Response.fromStream(s, 200));
       default:
         return http.get(uri, headers: headers);
     }

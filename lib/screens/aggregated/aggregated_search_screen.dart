@@ -1,5 +1,6 @@
 /// 搜索页 v2 — 聚合搜索 + 单源搜索 + 类型筛选 + 历史记录
 import 'package:flutter/material.dart';
+import '../../models/video_content.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../providers/source_provider.dart';
@@ -306,7 +307,7 @@ class _AggregatedSearchScreenState extends State<AggregatedSearchScreen>
         labelColor: const Color(0xFF2196F3),
         unselectedLabelColor: Colors.grey,
         tabs: types.map((t) => Tab(
-          text: '${t.0} (${t.1})',
+          text: '${t.$1} (${t.$2})',
         )).toList(),
       ),
     );

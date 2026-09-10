@@ -97,7 +97,14 @@ class SourceProvider extends ChangeNotifier {
     if (_activeSource == null || _activeSource!.mediaType != 'video') return [];
     final items = await SpiderServiceV2.getCategoryVideo(
       _activeSource!, typeId: typeId, page: page);
-    return items;
+    return items.map((e) => VideoContent.fromUnified(e)).toList();
+  }
+
+  /// 获取视频详情
+  Future<VideoContent?> getDetail(String id) async {
+    if (_activeSource == null || _activeSource!.mediaType != 'video') return null;
+    final item = await SpiderServiceV2.getDetailVideo(_activeSource!, id);
+    return item != null ? VideoContent.fromUnified(item) : null;
   }
 
   /// 获取直播频道

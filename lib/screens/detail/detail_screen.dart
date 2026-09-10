@@ -37,7 +37,13 @@ class _DetailScreenState extends State<DetailScreen>
     super.dispose();
   }
 
-  Future<void> _loadDetail() async {
+  
+  Future<VideoContent?> getDetail(String id) async {
+    final provider = SourceProvider();
+    return await provider.getDetail(id);
+  }
+
+Future<void> _loadDetail() async {
     final provider = context.read<SourceProvider>();
     final detail = await provider.getDetail(widget.video.id);
     setState(() { _detail = detail ?? widget.video; _isLoading = false; });

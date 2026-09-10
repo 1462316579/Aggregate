@@ -15,7 +15,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
-  Map<String, List<VideoContent>> _results = {};
+  AggregatedSearchResult _results = {};
   bool _isSearching = false;
   String _query = '';
 
@@ -45,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final results = await provider.searchAll(query);
 
     setState(() {
-      _results = results;
+      _results = Map<String, List<VideoContent>>.from(results);
       _isSearching = false;
     });
   }
