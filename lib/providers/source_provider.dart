@@ -116,8 +116,8 @@ class SourceProvider extends ChangeNotifier {
   }
 
   /// 搜索
-  Future<AggregatedSearchResult> searchAll(String keyword, {int page = 1}) async {
-    return SpiderServiceV2.searchAll(_sources, keyword, page: page);
+  Future<AggregatedSearchResult> searchAll(String keyword) async {
+    return SpiderServiceV2.searchAll(_sources, keyword);
   }
 
   /// 刷新
