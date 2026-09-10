@@ -46,7 +46,7 @@ dependencies:
   uuid: ^4.2.1
   collection: ^1.18.0
   connectivity_plus: ^5.0.2
-  wakelock_plus: ^1.2.1
+  wakelock_plus: ^1.1.4
   url_launcher: ^6.2.2
   device_info_plus: ^9.1.1
   
