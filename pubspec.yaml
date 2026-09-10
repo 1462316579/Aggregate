@@ -68,3 +68,5 @@ flutter:
 
 dependency_overrides:
   screen_brightness_android: 2.1.2
+  media_kit_video:
+    path: packages/media_kit_video_fixed
