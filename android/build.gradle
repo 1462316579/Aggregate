@@ -4,3 +4,23 @@ allprojects {
         mavenCentral()
     }
 }
+
+// Force compileSdkVersion for all subprojects
+gradle.projectsLoaded {
+    rootProject.subprojects { subproject ->
+        project.pluginManager.withPlugin("com.android.application") { plugin ->
+            plugin.extensions.getByName("android").compileSdkVersion = 34
+        }
+        project.pluginManager.withPlugin("com.android.library") { plugin ->
+            plugin.extensions.getByName("android").compileSdkVersion = 34
+        }
+    }
+}
+
+rootProject.buildDir = "../build"
+subprojects {
+    project.buildDir = "${rootProject.buildDir}/${project.name}"
+}
+subprojects {
+    project.evaluationDependsOn(":app")
+}
