@@ -109,7 +109,7 @@ class _ComicPageState extends State<ComicPage> {
             clipBehavior: Clip.antiAlias,
             child: Stack(fit: StackFit.expand, children: [
               CachedNetworkImage(imageUrl: item.cover, fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Icon(Icons.auto_stories, color: Colors.grey[400])),
+                errorWidget: (_, __, ___) => Icon(Icons.auto_stories, color: Colors.grey[400])),
               if (item.status != null)
                 Positioned(top: 0, right: 0, child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

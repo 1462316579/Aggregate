@@ -392,7 +392,7 @@ class VideoSnifferService {
     return m.contains('video/') ||
         m.contains('mpegurl') ||
         m.contains('x-mpegurl') ||
-        m.includes('m3u8');
+        m.contains('m3u8');
   }
 
   static bool _isVideoCdn(String url) {

@@ -3,7 +3,7 @@ class SourceCategory {
   final String id;
   final String name;
   final String type;  // video/comic/novel/music/live
-  final List<SubCategory>? subs;
+  final List<SourceCategory>? subs;
 
   SourceCategory({required this.id, required this.name, this.type = 'video', this.subs});
 

@@ -119,7 +119,7 @@ class MusicPlayerService extends ChangeNotifier {
   void playOrPause() => _player.playOrPause();
 
   void pause() => _player.pause();
-  void resume() => _player.resume();
+  void resume() => _player.open(player.playable);
 
   /// 下一曲
   Future<void> next() async {
@@ -176,9 +176,9 @@ class MusicPlayerService extends ChangeNotifier {
         _repeatMode = RepeatMode.none;
     }
     _player.setRepeatMode(_repeatMode == RepeatMode.one
-        ? RepeatMode.single
+        ? RepeatMode
         : _repeatMode == RepeatMode.all
-            ? RepeatMode.playlist
+            ? RepeatMode
             : RepeatMode.none);
     notifyListeners();
   }

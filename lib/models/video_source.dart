@@ -64,4 +64,7 @@ class VideoSource {
     headers: headers, isActive: isActive ?? this.isActive,
     mediaType: mediaType ?? this.mediaType,
   );
+
+  /// 内置源标识
+  bool get isBuiltIn => ext == null && spider == null;
 }

@@ -1,6 +1,7 @@
 /// 全局状态管理 v2 — 统一管理所有媒体源
 import 'package:flutter/material.dart';
 import '../models/video_source.dart';
+import '../models/video_content.dart';
 import '../models/unified_content.dart';
 import '../services/spider_service_v2.dart';
 import '../services/app_config.dart';

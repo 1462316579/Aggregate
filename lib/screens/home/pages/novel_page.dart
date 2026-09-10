@@ -98,7 +98,7 @@ class _NovelPageState extends State<NovelPage> {
           clipBehavior: Clip.antiAlias,
           child: Stack(fit: StackFit.expand, children: [
             CachedNetworkImage(imageUrl: item.cover, fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Icon(Icons.menu_book, color: Colors.grey[400])),
+              errorWidget: (_, __, ___) => Icon(Icons.menu_book, color: Colors.grey[400])),
             if (item.status != null) Positioned(top: 0, right: 0, child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: const BoxDecoration(color: Color(0xFF4CAF50),

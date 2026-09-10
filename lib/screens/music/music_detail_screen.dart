@@ -74,7 +74,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
               children: [
                 CachedNetworkImage(
                   imageUrl: widget.content.cover, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(color: Colors.grey[800]),
+                  errorWidget: (_, __, ___) => Container(color: Colors.grey[800]),
                 ),
                 const DecoratedBox(
                   decoration: BoxDecoration(
@@ -133,7 +133,7 @@ class _MusicDetailScreenState extends State<MusicDetailScreen> {
               children: [
                 CachedNetworkImage(
                   imageUrl: detail.cover, fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(color: Colors.grey[800]),
+                  errorWidget: (_, __, ___) => Container(color: Colors.grey[800]),
                 ),
                 const DecoratedBox(
                   decoration: BoxDecoration(

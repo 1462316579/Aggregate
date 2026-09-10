@@ -84,7 +84,7 @@ class TvRemoteHandlerState extends State<TvRemoteHandler> {
 
     // 菜单
     if (key == LogicalKeyboardKey.contextMenu ||
-        key == LogicalKeyboardKey.menu)
+        key == LogicalKeyboardKey.escape)
       return TvAction.menu;
 
     // 播放控制
@@ -107,10 +107,10 @@ class TvRemoteHandlerState extends State<TvRemoteHandler> {
     if (key == LogicalKeyboardKey.channelDown) return TvAction.channelDown;
 
     // 彩色键 (常见于遥控器)
-    if (key == LogicalKeyboardKey.f1 || key == LogicalKeyboardKey.red) return TvAction.red;
-    if (key == LogicalKeyboardKey.f2 || key == LogicalKeyboardKey.green) return TvAction.green;
-    if (key == LogicalKeyboardKey.f3 || key == LogicalKeyboardKey.yellow) return TvAction.yellow;
-    if (key == LogicalKeyboardKey.f4 || key == LogicalKeyboardKey.blue) return TvAction.blue;
+    if (key == LogicalKeyboardKey.f1 || key == LogicalKeyboardKey.f1) return TvAction.red;
+    if (key == LogicalKeyboardKey.f2 || key == LogicalKeyboardKey.f2) return TvAction.green;
+    if (key == LogicalKeyboardKey.f3 || key == LogicalKeyboardKey.f3) return TvAction.yellow;
+    if (key == LogicalKeyboardKey.f4 || key == LogicalKeyboardKey.f4) return TvAction.blue;
 
     return TvAction.unknown;
   }

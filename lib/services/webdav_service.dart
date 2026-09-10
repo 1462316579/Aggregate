@@ -203,7 +203,10 @@ class WebDavService {
       case 'DELETE':
         return http.delete(uri, headers: headers);
       case 'PROPFIND':
-        return http.request('PROPFIND', uri: uri, headers: headers, body: body);
+        final client = http.Client();
+        final request = http.Request('PROPFIND', uri)..headers.addAll(headers);
+        if (body != null) request.body = body;
+        return client.send(request);
       default:
         return http.get(uri, headers: headers);
     }

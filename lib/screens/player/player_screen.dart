@@ -1,6 +1,7 @@
 /// 播放器 v2 — 整合所有平台特性
 /// TV遥控器 / 手势 / 键盘 / 投屏 / 跳过片头片尾
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:media_kit/media_kit.dart';
@@ -171,7 +172,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
 
   void _changeSpeed(double delta) {
     _speed = (_speed + delta).clamp(0.5, 3.0);
-    _player.setPlaybackRate(_speed);
+    _player.setRate(_speed);
   }
 
   @override
@@ -288,7 +289,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
             // 倍速
             PopupMenuButton<double>(
               icon: Text('${_speed}x', style: const TextStyle(color: Colors.white, fontSize: 14)),
-              onSelected: (s) { _speed = s; _player.setPlaybackRate(s); },
+              onSelected: (s) { _speed = s; _player.setRate(s); },
               itemBuilder: (_) => [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
                   .map((s) => PopupMenuItem(value: s, child: Text('${s}x',
                       style: TextStyle(color: s == _speed ? Colors.blue : null))))

@@ -95,7 +95,7 @@ class _MusicPageState extends State<MusicPage> {
         borderRadius: BorderRadius.circular(6),
         child: CachedNetworkImage(
           imageUrl: item.cover, width: 48, height: 48, fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => Container(
+          errorWidget: (_, __, ___) => Container(
             width: 48, height: 48, color: Colors.grey[200],
             child: const Icon(Icons.music_note, color: Colors.grey, size: 22)),
         ),

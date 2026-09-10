@@ -106,4 +106,26 @@ class UnifiedContent {
       sourceKey: sourceKey ?? this.sourceKey, mediaType: mediaType,
       status: status, year: year, extra: extra,
     );
+
+  VideoContent toVideoContent() {
+    return VideoContent(
+      id: id,
+      name: name,
+      cover: cover,
+      year: year,
+      area: area,
+      director: director,
+      actor: actor,
+      desc: desc,
+      typeId: typeId,
+      typeName: typeName,
+      status: status,
+      lang: lang,
+      total: total,
+      last: last,
+      vodPlayFrom: vodPlayFrom,
+      vodPlayUrl: vodPlayUrl,
+      vodPlayNote: vodPlayNote,
+    );
+  }
 }

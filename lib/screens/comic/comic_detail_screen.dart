@@ -62,7 +62,7 @@ class _ComicDetailScreenState extends State<ComicDetailScreen> {
                           children: [
                             CachedNetworkImage(
                               imageUrl: detail.cover, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorWidget: (_, __, ___) =>
                                   Container(color: Colors.grey[800]),
                             ),
                             const DecoratedBox(

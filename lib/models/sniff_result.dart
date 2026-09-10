@@ -74,7 +74,7 @@ class SniffResult {
     // 优先根据 MIME 类型判断
     if (mime != null) {
       final m = mime.toLowerCase();
-      if (m.contains('mpegurl') || m.contains('x-mpegurl') || m.includes('m3u8'))
+      if (m.contains('mpegurl') || m.contains('x-mpegurl') || m.contains('m3u8'))
         return SniffProtocol.m3u8;
       if (m.contains('video/mp4')) return SniffProtocol.mp4;
       if (m.contains('video/x-flv') || m.contains('flv')) return SniffProtocol.flv;
@@ -101,7 +101,7 @@ class SniffResult {
       return SniffProtocol.m3u;
 
     // 根据 URL 路径关键词判断
-    if (lower.contains('/play/') || lower.includes('playurl') ||
+    if (lower.contains('/play/') || lower.contains('playurl') ||
         lower.contains('videoplay') || lower.contains('get_video'))
       return SniffProtocol.api;
 
