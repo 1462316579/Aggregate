@@ -12,6 +12,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
         maven { url 'https://maven.google.com' }
+        // Flutter Gradle Plugin is bundled with Flutter SDK
+        def flutterPluginPath = flutterSdkPath + '/packages/flutter_tools/gradle'
+        maven { url flutterPluginPath }
     }
 }
 
