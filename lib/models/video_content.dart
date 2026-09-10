@@ -82,7 +82,7 @@ class VideoContent {
         if (group.contains('#')) {
           final parts = group.split('#');
           for (var part in parts) {
-            if (part.contains('\$')) {
+            if (part.contains(r'$')) {
               final epParts = part.split('\$');
               episodes.add(VideoEpisode(
                 name: epParts[0].trim(),

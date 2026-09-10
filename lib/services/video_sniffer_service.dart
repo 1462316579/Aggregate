@@ -16,14 +16,14 @@ class VideoSnifferService {
 
   /// 视频文件扩展名匹配
   static final _videoUrlPatterns = RegExp(
-    r'https?://[^\s"\'<>]+\.(m3u8|mp4|flv|ts|mkv|avi|wmv|mov|webm|rmvb|m3u)'
-    r'(\?[^\s"\'<>]*)?',
+    r'''https?://[^\s"'<>]+\.(m3u8|mp4|flv|ts|mkv|avi|wmv|mov|webm|rmvb|m3u)'''
+    r'''(\?[^\s"'<>]*)?''',
     caseSensitive: false,
   );
 
   /// HLS manifest 匹配
   static final _hlsPatterns = RegExp(
-    r'https?://[^\s"\'<>]+/[^"\'<>\s]*\.m3u8[^\s"\'<>]*',
+    r'''https?://[^\s"'<>]+/[^"'<>\s]*\.m3u8[^\s"'<>]*''',
     caseSensitive: false,
   );
 
@@ -53,13 +53,13 @@ class VideoSnifferService {
 
   /// 常见视频 API 接口模式
   static final _videoApiPatterns = [
-    RegExp(r'play(?:er)?_?url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+)', caseSensitive: false),
-    RegExp(r'video_?url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+)', caseSensitive: false),
-    RegExp(r'src\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)', caseSensitive: false),
-    RegExp(r'url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)', caseSensitive: false),
-    RegExp(r'file\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)', caseSensitive: false),
-    RegExp(r'["\']https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*["\']'),
-    RegExp(r'["\']https?://[^\s"\'<>]+\.mp4[^\s"\'<>]*["\']'),
+    RegExp(r"""play(?:er)?_?url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+)""", caseSensitive: false),
+    RegExp(r"""video_?url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+)""", caseSensitive: false),
+    RegExp(r"""src\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)""", caseSensitive: false),
+    RegExp(r"""url\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)""", caseSensitive: false),
+    RegExp(r"""file\s*[=:]\s*["\']?(https?://[^\s"\'<>]+\.(m3u8|mp4|flv)[^\s"\'<>]*)""", caseSensitive: false),
+    RegExp(r"""["\']https?://[^\s"\'<>]+\.m3u8[^\s"\'<>]*["\']"""),
+    RegExp(r"""["\']https?://[^\s"\'<>]+\.mp4[^\s"\'<>]*["\']"""),
   ];
 
   // ════════════════════════════════════════
@@ -157,7 +157,7 @@ class VideoSnifferService {
 
     // 3. 提取 <source> / <video> 标签中的 src
     final sourceTagPattern = RegExp(
-      r'<(?:source|video)[^>]+src\s*=\s*["\']([^"\']+)["\']',
+      r"""<(?:source|video)[^>]+src\s*=\s*["']([^"']+)["']""",
       caseSensitive: false,
     );
     for (var match in sourceTagPattern.allMatches(html)) {
@@ -175,7 +175,7 @@ class VideoSnifferService {
 
     // 4. 提取 iframe 嵌入的视频地址
     final iframePattern = RegExp(
-      r'<iframe[^>]+src\s*=\s*["\']([^"\']*(?:player|video|embed|play)[^"\']*)["\']',
+      r"""<iframe[^>]+src\s*=\s*["']([^"']*(?:player|video|embed|play)[^"']*)["']""",
       caseSensitive: false,
     );
     for (var match in iframePattern.allMatches(html)) {
