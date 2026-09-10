@@ -1,20 +1,16 @@
-// Define flutterRoot BEFORE any apply from
-def flutterRoot = rootProject.ext.flutterRoot
-if (flutterRoot == null) {
-    flutterRoot = System.getenv("FLUTTER_ROOT")
-}
-if (flutterRoot == null) {
-    flutterRoot = "/opt/hostedtoolcache/flutter/stable-3.22.0-x64/flutter"
+plugins {
+    id 'com.android.application'
+    id 'kotlin-android'
+    id 'dev.flutter.flutter-gradle-plugin'
 }
 
-// Define localProperties before any usage
-def localPropertiesFile = rootProject.file('local.properties')
 def localProperties = new Properties()
-localPropertiesFile.withReader('UTF-8') { localProperties.load(it) }
-
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
-apply from: "${flutterRoot}/packages/flutter_tools/gradle/flutter.gradle"
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
@@ -27,6 +23,7 @@ if (flutterVersionName == null) {
 }
 
 android {
+    namespace "com.allplay.app"
     compileSdkVersion 33
     ndkVersion "25.2.9519653"
 
