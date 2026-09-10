@@ -1,2 +1,195 @@
-[CONTEXT OFFLOADED] Content (~4055 tokens, 11691 bytes) saved to: /var/minis/offloads/tools/file_write_d42d2c37b291.txt
-Use file_read tool to retrieve if needed.
+name: Build All Platforms and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ===== Android (最快，优先发布) =====
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 5
+
+  # ===== Web (快，无需签名) =====
+  build-web:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build web --release
+      - name: Archive web build
+        run: |
+          cd build/web && zip -r ../../allplay-web.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: allplay-web.zip
+          retention-days: 5
+
+  # ===== Windows (桌面端) =====
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Archive windows build
+        run: |
+          cd build\windows\x64\runner\Release && zip -r ../../../../../../allplay-windows.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: allplay-windows.zip
+          retention-days: 5
+
+  # ===== Linux (桌面端) =====
+  build-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y cmake ninja-build clang libgtk-3-dev libblkid-dev
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Archive linux build
+        run: |
+          cd build/linux/x64/release/bundle && zip -r ../../../../../../allplay-linux.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: allplay-linux.zip
+          retention-days: 5
+
+  # ===== macOS (单独运行，不阻塞其他平台) =====
+  build-macos:
+    runs-on: macos-13
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: Archive macos build
+        run: |
+          cd build/macos/Build/Products/Release && zip -r ../../../../../../allplay-macos.zip allplay.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: allplay-macos.zip
+          retention-days: 5
+
+  # ===== iOS (单独运行，需要Xcode签名) =====
+  build-ios:
+    runs-on: macos-13
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.0'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
+      - name: Archive iOS build
+        run: |
+          cd build/ios/iphoneos && zip -r ../../../../allplay-ios.zip .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ios
+          path: allplay-ios.zip
+          retention-days: 5
+
+  # ===== 统一发布到 GitHub Releases =====
+  publish-release:
+    name: Publish to GitHub Release
+    needs: [build-android, build-web, build-windows, build-linux, build-macos, build-ios]
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: *
+          merge-multiple: true
+
+      - name: Prepare release assets
+        run: |
+          ls -la artifacts/
+          # 重命名为标准格式
+          mv artifacts/apk app-release.apk 2>/dev/null || true
+          mv artifacts/web allplay-web.zip 2>/dev/null || true
+          mv artifacts/windows allplay-windows.zip 2>/dev/null || true
+          mv artifacts/linux allplay-linux.zip 2>/dev/null || true
+          mv artifacts/macos allplay-macos.zip 2>/dev/null || true
+          mv artifacts/ios allplay-ios.zip 2>/dev/null || true
+          ls -la *.apk *.zip 2>/dev/null || true
+
+      - name: Create or Update Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: "AllPlay Release ${{ github.run_number }}"
+          body: |
+            ## AllPlay v${{ github.run_number }}
+            
+            **Build Date:** ${{ github.event.head_commit.timestamp }}
+            **Commit:** ${{ github.sha }}
+            
+            ### Downloads
+            - 📱 Android APK: \`app-release.apk\`
+            - 🌐 Web: \`allplay-web.zip\`
+            - 🖥️ Windows: \`allplay-windows.zip\`
+            - 🐧 Linux: \`allplay-linux.zip\`
+            - 🍎 macOS: \`allplay-macos.zip\`
+            - 📲 iOS: \`allplay-ios.zip\`
+            
+            ### Features
+            - Multi-source video aggregation
+            - WebDAV backup/restore
+            - AI plugin support
+            - Multi-platform support
+          files: |
+            app-release.apk
+            allplay-web.zip
+            allplay-windows.zip
+            allplay-linux.zip
+            allplay-macos.zip
+            allplay-ios.zip
+          draft: false
+          prerelease: false
+          token: ${{ secrets.GITHUB_TOKEN }}

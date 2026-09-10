@@ -65,3 +65,6 @@ flutter:
     - assets/
     - assets/fonts/
     - assets/icon/
+
+dependency_overrides:
+  package_info_plus: 9.0.0
