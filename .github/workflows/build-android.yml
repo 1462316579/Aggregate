@@ -36,13 +36,12 @@ jobs:
       - name: Upload Release APK to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: ${{ github.ref_name == 'main' && format('AllPlay v{0}', '1.0.0') || format('AllPlay v{0} ({1})', '1.0.0', github.sha) }}
-          tag_name: ${{ github.ref == 'refs/heads/main' && 'v1.0.0' || github.sha }}
+          name: 宏曦聚合
+          tag_name: v1.0.0
           files: build/app/outputs/flutter-apk/app-release.apk
           body: |
-            ## AllPlay APK (Release)
+            ## 宏曦聚合 APK (Release)
             - **Build type:** Release
             - **Architecture:** Universal (armeabi-v7a + arm64-v8a)
-            - **Size:** ${{ steps.get_size.outputs.size }} KB
           draft: false
           prerelease: false
