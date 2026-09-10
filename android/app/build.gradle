@@ -50,8 +50,13 @@ android {
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+    }
+
+    splits {
+        abi {
+            reset()
+            enable false
+            universalApk true
         }
     }
 
