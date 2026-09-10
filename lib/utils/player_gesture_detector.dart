@@ -34,7 +34,7 @@ class _PlayerGestureDetectorState extends State<PlayerGestureDetector>
   bool _isLongPressForward = true; // true=快进, false=快退
   int _longPressSpeed = 0; // 当前倍速
   Timer? _longPressTimer;
-  int _longPress累计秒数 = 0;
+  int _longPressAccumulatedSeconds = 0;
 
   // 双击检测
   DateTime? _lastTapTime;
@@ -107,14 +107,14 @@ class _PlayerGestureDetectorState extends State<PlayerGestureDetector>
     final screenWidth = MediaQuery.of(context).size.width;
     _isLongPressForward = details.localPosition.dx > screenWidth / 2;
     _isLongPressing = true;
-    _longPress累计秒数 = 0;
+    _longPressAccumulatedSeconds = 0;
     _longPressSpeed = 2; // 初始 2x
 
-    // 每 100ms 累计
+    // accumulate every 100ms
     _longPressTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-      _longPress累计秒数++;
+      _longPressAccumulatedSeconds++;
       // 每 5 秒加速一次
-      if (_longPress累计秒数 % 50 == 0 && _longPressSpeed < 8) {
+      if (_longPressAccumulatedSeconds % 50 == 0 && _longPressSpeed < 8) {
         _longPressSpeed += 1;
       }
       if (widget.onLongPressSeek != null) {
