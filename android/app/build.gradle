@@ -1,9 +1,7 @@
-plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'dev.flutter.flutter-gradle-plugin'
-}
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
+// Read Flutter SDK path from local.properties
 def localProperties = new Properties()
 def localPropertiesFile = rootProject.file('local.properties')
 if (localPropertiesFile.exists()) {
@@ -11,6 +9,13 @@ if (localPropertiesFile.exists()) {
         localProperties.load(reader)
     }
 }
+
+def flutterSdkPath = localProperties.getProperty('flutter.sdk')
+if (flutterSdkPath == null) {
+    flutterSdkPath = "/opt/hostedtoolcache/flutter/stable-3.22.0-x64/flutter"
+}
+
+apply from: "${flutterSdkPath}/packages/flutter_tools/gradle/flutter.gradle"
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
 if (flutterVersionCode == null) {
@@ -24,8 +29,8 @@ if (flutterVersionName == null) {
 
 android {
     namespace "com.allplay.app"
-    compileSdk flutter.compileSdkVersion
-    ndkVersion flutter.ndkVersion
+    compileSdkVersion 33
+    ndkVersion "25.2.9519653"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -42,8 +47,8 @@ android {
 
     defaultConfig {
         applicationId "com.allplay.app"
-        minSdk flutter.minSdkVersion
-        targetSdk flutter.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 33
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
