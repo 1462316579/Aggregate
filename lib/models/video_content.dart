@@ -77,12 +77,12 @@ class VideoContent {
       }
     } else if (episodeList is String && episodeList.isNotEmpty) {
       // TVBox V3 格式: 详情里有多条播放链接
-      final groups = episodeList.split('$$$');
+      final groups = episodeList.split('\$\$\$');
       for (var group in groups) {
         if (group.contains('#')) {
           final parts = group.split('#');
           for (var part in parts) {
-            if (part.contains(r'$')) {
+            if (part.contains('\$')) {
               final epParts = part.split('\$');
               episodes.add(VideoEpisode(
                 name: epParts[0].trim(),
