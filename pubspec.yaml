@@ -65,6 +65,3 @@ flutter:
     - assets/
     - assets/fonts/
     - assets/icons/
-
-dependency_overrides:
-  screen_brightness_android: ^3.0.0
