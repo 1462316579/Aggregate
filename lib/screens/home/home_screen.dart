@@ -1,4 +1,5 @@
-/// 亦搜风格首页 — 顶部搜索 + Tab切换 + 横向滚动分区 + 底部导航
+/// 宏曦聚合 — 主页面
+/// 底部导航: 首页 / 收藏 / 插件 / 设置
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/source_provider.dart';
@@ -7,18 +8,11 @@ import '../../models/unified_content.dart';
 import '../../services/spider_service_v2.dart';
 import '../../services/music_player_service.dart';
 import '../../screens/detail/detail_screen.dart';
-import '../../screens/search/search_screen.dart';
 import '../../screens/aggregated/aggregated_search_screen.dart';
 import '../../screens/sniffer/sniffer_screen.dart';
-import '../../screens/comic/comic_detail_screen.dart';
-import '../../screens/novel/novel_detail_screen.dart';
-import '../../screens/music/music_player_screen.dart';
-import '../../screens/music/music_detail_screen.dart';
-import 'pages/comic_page.dart';
-import 'pages/novel_page.dart';
-import 'pages/music_page.dart';
-import 'pages/live_page.dart';
-import 'pages/mine_page.dart';
+import '../../screens/favorites_page.dart';
+import '../../screens/plugin/plugin_page.dart';
+import '../../screens/settings/settings_page.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -29,13 +23,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _currentTab = 0;
 
-  final _tabs = const ['精选', '漫画', '小说', '音乐', '直播'];
+  final _tabs = const ['首页', '收藏', '插件', '设置'];
   final _icons = const [
     Icons.home_rounded,
-    Icons.auto_stories_rounded,
-    Icons.menu_book_rounded,
-    Icons.music_note_rounded,
-    Icons.live_tv_rounded,
+    Icons.favorite_rounded,
+    Icons.extension_rounded,
+    Icons.settings_rounded,
   ];
 
   @override
@@ -55,10 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
               index: _currentTab,
               children: [
                 _VideoTabPage(),
-                const ComicPage(),
-                const NovelPage(),
-                const MusicPage(),
-                const LivePage(),
+                const FavoritesPage(),
+                const PluginPage(),
+                const SettingsPage(),
               ],
             ),
           ),
