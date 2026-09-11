@@ -558,43 +558,6 @@ class SpiderServiceV2 {
   }
 }
 
-/// 聚合搜索结果
-class AggregatedSearchResult {
-  final String query;
-  final int totalResults;
-  final Map<MediaType, List<UnifiedContent>> byType;
-  final Map<String, List<UnifiedContent>> bySource;
-
-  AggregatedSearchResult({
-    required this.query,
-    required this.totalResults,
-    required this.byType,
-    required this.bySource,
-  });
-
-  List<UnifiedContent> ofType(MediaType type) => byType[type] ?? [];
-}
-
-/// 内部搜索任务结果
-class _SearchTaskResult {
-  final String sourceKey;
-  final MediaType mediaType;
-  final List<UnifiedContent> items;
-
-  _SearchTaskResult({
-    required this.sourceKey,
-    required this.mediaType,
-    required this.items,
-  });
-}
-
-/// 视频分类 (兼容旧版)
-class VideoSourceCategory {
-  final String id;
-  final String name;
-  VideoSourceCategory({required this.id, required this.name});
-}
-
   /// 获取漫画章节图片列表
   static Future<List<String>> getComicChapterImages(VideoSource source, String url) async {
     if (url.isEmpty) return [];

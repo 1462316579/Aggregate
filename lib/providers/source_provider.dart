@@ -6,7 +6,6 @@ import '../models/video_content.dart';
 import '../models/unified_content.dart';
 import '../services/spider_service_v2.dart';
 
-/// 源数据提供程序
 class SourceProvider extends ChangeNotifier {
   late List<VideoSource> _sources;
   VideoSource? _activeSource;
@@ -18,43 +17,26 @@ class SourceProvider extends ChangeNotifier {
   bool get isLoading => _loading;
   String? get error => _error;
 
-  /// 漫画源
-  List<VideoSource> get comicSources =>
-      _sources.where((s) => s.mediaType == 'comic').toList();
-  /// 小说源
-  List<VideoSource> get novelSources =>
-      _sources.where((s) => s.mediaType == 'novel').toList();
-  /// 音乐源
-  List<VideoSource> get musicSources =>
-      _sources.where((s) => s.mediaType == 'music').toList();
-  /// 视频源
-  List<VideoSource> get videoSources =>
-      _sources.where((s) => s.mediaType == 'video').toList();
+  List<VideoSource> get comicSources => _sources.where((s) => s.mediaType == 'comic').toList();
+  List<VideoSource> get novelSources => _sources.where((s) => s.mediaType == 'novel').toList();
+  List<VideoSource> get musicSources => _sources.where((s) => s.mediaType == 'music').toList();
+  List<VideoSource> get videoSources => _sources.where((s) => s.mediaType == 'video').toList();
 
-  SourceProvider() {
-    _init();
-  }
+  SourceProvider() { _init(); }
 
-  /// 公开初始化方法（供 main.dart 调用）
   Future<void> init() => _init();
 
   Future<void> _init() async {
     _loading = true;
     _error = null;
     notifyListeners();
-
     _sources = await AppConfig.getSources();
     final activeKey = await AppConfig.getActiveSourceKey();
     if (activeKey != null) {
-      _activeSource = _sources.firstWhere(
-        (s) => s.key == activeKey,
-        orElse: () => _sources.first,
-      );
+      _activeSource = _sources.firstWhere((s) => s.key == activeKey, orElse: () => _sources.first);
     } else if (_sources.isNotEmpty) {
       _activeSource = _sources.first;
     }
-
-    // 尝试在线刷新
     try {
       final configUrl = await AppConfig.getConfigUrl();
       if (configUrl != null && configUrl.isNotEmpty) {
@@ -63,12 +45,10 @@ class SourceProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint('SourceProvider init error: $e');
     }
-
     _loading = false;
     notifyListeners();
   }
 
-  /// 从 URL 加载源
   Future<void> loadFromUrl(String url) async {
     _loading = true;
     _error = null;
@@ -87,45 +67,34 @@ class SourceProvider extends ChangeNotifier {
     }
   }
 
-  /// 获取视频分类
   Future<List<VideoContent>> getCategory(String? typeId, {int page = 1}) async {
     if (_activeSource == null || _activeSource!.mediaType != 'video') return [];
-    final items = await SpiderServiceV2.getCategoryVideo(
-      _activeSource!, typeId: typeId, page: page);
+    final items = await SpiderServiceV2.getCategoryVideo(_activeSource!, typeId: typeId, page: page);
     return items.map((e) => e.toVideoContent()).toList();
   }
 
-  /// 获取直播频道
   Future<List<Map<String, String>>> getLiveChannels(String url) async {
     return SpiderServiceV2.getLiveChannels(url);
   }
 
-  /// 获取视频详情
   Future<VideoContent?> getDetail(String id) async {
     if (_activeSource == null || _activeSource!.mediaType != 'video') return null;
     final detail = await SpiderServiceV2.getVideoDetail(_activeSource!, id);
     if (detail == null) return null;
-    // Convert Map to VideoContent
     return VideoContent.fromJson(detail, sourceKey: _activeSource!.key);
   }
 
-  /// 获取播放链接
   Future<String?> getPlayUrl(String id, {String? from, String? server}) async {
     if (_activeSource == null) return null;
     return SpiderServiceV2.parseVideoPlayUrl(_activeSource!, id);
   }
 
-  /// 搜索
   Future<AggregatedSearchResult> searchAll(String keyword) async {
     return SpiderServiceV2.searchAll(_sources, keyword);
   }
 
-  /// 刷新
   Future<void> refresh() => _init();
 
-  // ── 源管理方法 ──
-
-  /// 批量添加源
   Future<void> addSources(List<VideoSource> sources) async {
     _sources.addAll(sources);
     await AppConfig.saveSources(_sources);
@@ -135,12 +104,10 @@ class SourceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 添加单个源
   Future<void> addSource(VideoSource source) async {
     await addSources([source]);
   }
 
-  /// 移除源
   Future<void> removeSource(String key) async {
     _sources.removeWhere((s) => s.key == key);
     if (_activeSource?.key == key) {
@@ -150,29 +117,31 @@ class SourceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// 设置活动源
   void setActiveSource(VideoSource source) {
     _activeSource = source;
     AppConfig.setActiveSource(source.key);
     notifyListeners();
   }
 
-  /// 从配置 URL 刷新
   Future<void> refreshFromConfig(String url) async {
     await loadFromUrl(url);
   }
-}
+
   /// 获取指定源
   VideoSource? sourceFor(String? key) {
     if (key == null) return null;
-    return _sources.firstWhere((s) => s.key == key, orElse: () => _sources.firstOrNull!);
+    try {
+      return _sources.firstWhere((s) => s.key == key);
+    } catch (_) {
+      return null;
+    }
   }
 
   /// 获取小说章节内容
   Future<String> chapterContent(String sourceId, String url) async {
     final source = sourceFor(sourceId);
     if (source == null) return '';
-    return await SpiderServiceV2.getNovelChapterContent(source, url);
+    return await SpiderServiceV2.getNovelChapterContent(source, url) ?? '';
   }
 
   /// 获取漫画章节图片
