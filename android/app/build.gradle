@@ -27,7 +27,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.hongxi.2026.homes"
+    namespace "com.hongxi.homes.app2026"
     compileSdkVersion 34
     ndkVersion "25.2.9519653"
 
@@ -47,7 +47,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.hongxi.2026.homes"
+        applicationId "com.hongxi.homes.app2026"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()
