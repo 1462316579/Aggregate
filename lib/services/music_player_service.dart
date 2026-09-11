@@ -4,6 +4,7 @@ import 'package:media_kit/media_kit.dart';
 import '../models/music_detail.dart';
 import '../services/spider_service_v2.dart';
 import '../models/video_source.dart';
+import '../models/content.dart';
 
 class MusicPlayerService extends ChangeNotifier {
   final Player _player = Player();
@@ -22,14 +23,19 @@ class MusicPlayerService extends ChangeNotifier {
 
   Player get player => _player;
   MusicTrack? get currentTrack => _currentTrack;
+  MusicTrack? get current => _currentTrack; // 别名
   List<MusicTrack> get playlist => _playlist;
+  List<MediaItem> get queue => _playlist.map((t) => MediaItem(id: t.id, title: t.title, album: t.album)).toList(); // 别名
   int get currentIndex => _currentIndex;
+  int get index => _currentIndex; // 别名
   bool get isPlaying => _isPlaying;
+  bool get playing => _isPlaying; // 别名
   bool get isLoading => _isLoading;
   Duration get position => _position;
   Duration get duration => _duration;
   List<LyricLine> get lyrics => _lyrics;
   int get currentLyricIndex => _currentLyricIndex;
+  int get lyricIndex => _currentLyricIndex; // 别名
   RepeatMode get repeatMode => _repeatMode;
   bool get shuffle => _shuffle;
   String? get error => _error;
@@ -115,14 +121,26 @@ class MusicPlayerService extends ChangeNotifier {
     }
   }
 
+  /// 播放队列 (兼容旧接口)
+  Future<void> playQueue(List<MediaItem> items, {int startIndex = 0, dynamic source}) async {
+    _playlist = items.map((item) => MusicTrack(id: item.id, title: item.title, artist: item.artist, album: item.album, playUrl: '', lyric: '')).toList();
+    _currentIndex = startIndex.clamp(0, _playlist.length - 1);
+    if (_playlist.isNotEmpty) {
+      await _player.open(Media(_playlist[_currentIndex].playUrl ?? ""));
+    }
+  }
+
   /// 播放/暂停切换
   void playOrPause() => _player.playOrPause();
+  
+  /// 播放/暂停 (别名)
+  void toggle() => playOrPause();
 
   void pause() => _player.pause();
   void resume() => _player.play();
 
   /// 下一曲
-  Future<void> next() async {
+  Future<void> next({dynamic source}) async {
     if (_playlist.isEmpty) return;
     if (_shuffle) {
       _currentIndex = (DateTime.now().millisecondsSinceEpoch % _playlist.length);
@@ -138,18 +156,22 @@ class MusicPlayerService extends ChangeNotifier {
       }
     }
     notifyListeners();
-    // 需要 source 引用，这里用当前 track 的 sourceKey
-    // 实际使用中由 Provider 传入
+    if (_playlist[_currentIndex].playUrl.isNotEmpty) {
+      await _player.open(Media(_playlist[_currentIndex].playUrl));
+    }
   }
 
   /// 上一曲
-  Future<void> prev() async {
+  Future<void> previous({dynamic source}) async {
     if (_playlist.isEmpty) return;
     _currentIndex--;
     if (_currentIndex < 0) {
       _currentIndex = _repeatMode == RepeatMode.all ? _playlist.length - 1 : 0;
     }
     notifyListeners();
+    if (_playlist[_currentIndex].playUrl.isNotEmpty) {
+      await _player.open(Media(_playlist[_currentIndex].playUrl));
+    }
   }
 
   /// 跳到指定位置
@@ -161,6 +183,12 @@ class MusicPlayerService extends ChangeNotifier {
       milliseconds: (_duration.inMilliseconds * percent).toInt(),
     );
     _player.seek(target);
+  }
+
+  /// 设置循环模式
+  void setRepeatMode(RepeatMode mode) {
+    _repeatMode = mode;
+    notifyListeners();
   }
 
   /// 切换循环模式
@@ -175,7 +203,6 @@ class MusicPlayerService extends ChangeNotifier {
       case RepeatMode.one:
         _repeatMode = RepeatMode.none;
     }
-    // _player.setRepeatMode is not available in media_kit
     notifyListeners();
   }
 
@@ -185,6 +212,9 @@ class MusicPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 格式化时间 (别名)
+  static String format(Duration d) => formatDuration(d);
+  
   /// 格式化时间
   static String formatDuration(Duration d) {
     final h = d.inHours;

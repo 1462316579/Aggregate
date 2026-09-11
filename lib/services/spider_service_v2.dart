@@ -594,3 +594,29 @@ class VideoSourceCategory {
   final String name;
   VideoSourceCategory({required this.id, required this.name});
 }
+
+  /// 获取漫画章节图片列表
+  static Future<List<String>> getComicChapterImages(VideoSource source, String url) async {
+    if (url.isEmpty) return [];
+    final client = _createClient(source);
+    final uri = Uri.parse(url);
+    try {
+      final response = await client.get(uri);
+      if (response.statusCode != 200) return [];
+      final html = response.body;
+      final regex = RegExp(r'<img[^>]+src=["\']([^"\']+)["\']', caseSensitive: false);
+      final images = <String>[];
+      for (final match in regex.allMatches(html)) {
+        final src = match.group(1) ?? '';
+        if (src.isNotEmpty) {
+          final fullUrl = src.startsWith('http') ? src : _resolveUrl(source, src);
+          images.add(fullUrl);
+        }
+      }
+      return images;
+    } catch (e) {
+      debugPrint('SpiderServiceV2.getComicChapterImages error: $e');
+      return [];
+    }
+  }
+}

@@ -200,7 +200,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
       child: Column(
         children: <Widget>[
           Row(children: <Widget>[
-            Text(MusicPlayerService.format(_audio.position), style: const TextStyle(color: Colors.white70, fontSize: 11)),
+            Text(MusicPlayerService.formatDuration(_audio.position), style: const TextStyle(color: Colors.white70, fontSize: 11)),
             Expanded(
               child: Slider(
                 value: _audio.duration.inMilliseconds > 0
@@ -211,7 +211,7 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
                 onChanged: (value) => _audio.seek(Duration(milliseconds: value.round())),
               ),
             ),
-            Text(MusicPlayerService.format(_audio.duration), style: const TextStyle(color: Colors.white70, fontSize: 11)),
+            Text(MusicPlayerService.formatDuration(_audio.duration), style: const TextStyle(color: Colors.white70, fontSize: 11)),
           ]),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,

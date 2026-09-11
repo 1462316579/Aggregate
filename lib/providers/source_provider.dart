@@ -162,3 +162,23 @@ class SourceProvider extends ChangeNotifier {
     await loadFromUrl(url);
   }
 }
+  /// 获取指定源
+  VideoSource? sourceFor(String? key) {
+    if (key == null) return null;
+    return _sources.firstWhere((s) => s.key == key, orElse: () => _sources.firstOrNull!);
+  }
+
+  /// 获取小说章节内容
+  Future<String> chapterContent(String sourceId, String url) async {
+    final source = sourceFor(sourceId);
+    if (source == null) return '';
+    return await SpiderServiceV2.getNovelChapterContent(source, url);
+  }
+
+  /// 获取漫画章节图片
+  Future<List<String>> chapterImages(String sourceId, String url) async {
+    final source = sourceFor(sourceId);
+    if (source == null) return [];
+    return await SpiderServiceV2.getComicChapterImages(source, url);
+  }
+}

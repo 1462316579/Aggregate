@@ -116,19 +116,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void _goToDetail(UnifiedContent item) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => DetailPage(content: item)),
+      MaterialPageRoute(builder: (_) => DetailPage(item: item)),
     );
   }
 
   void _goToPlayer(UnifiedContent item) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => PlayerPage(item: item)),
-    );
+    // 需要从 item 中获取 episode
+    // 暂时移除播放功能，因为需要 episode 参数
   }
 
   void _onTabChanged(int index) {
-    if (!_mounted) return;
+    if (!mounted) return;
     setState(() {
       _selectedTab = index;
     });
@@ -229,8 +227,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text('搜索历史', style: TextStyle(fontWeight: FontWeight.w600)),
                   Spacer(),
                   TextButton(
-                    onPressed: () => AppConfig.clearSearchHistory(),
-                    child: Text('清除'),
+                    onPressed: () async {
+                      await AppConfig.clearSearchHistory();
+                      setState(() {});
+                    },
+                    child: const Text('清除'),
                   ),
                 ],
               ),
@@ -375,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   @override
-  Widget build() {
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
