@@ -1,380 +1,407 @@
-/// 宏曦聚合 — 主页面
-/// 底部导航: 首页 / 收藏 / 插件 / 设置
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/source_provider.dart';
-import '../../models/video_content.dart';
-import '../../models/unified_content.dart';
+import '../../services/app_config.dart';
+import '../../services/plugin_service.dart';
 import '../../services/spider_service_v2.dart';
-import '../../services/music_player_service.dart';
-import '../../screens/detail/detail_screen.dart';
-import '../../screens/aggregated/aggregated_search_screen.dart';
-import '../../screens/sniffer/sniffer_screen.dart';
-import '../../screens/favorites_page.dart';
-import '../../screens/plugin/plugin_page.dart';
-import '../../screens/settings/settings_page.dart';
+import '../../services/video_sniffer_service.dart';
+import '../../models/plugin.dart';
+import '../../models/unified_content.dart';
+import '../../models/video_source.dart';
+import '../../l10n/app_localizations.dart';
+import '../favorites_page.dart';
+import '../plugin/plugin_page.dart';
+import '../settings/settings_page.dart';
+import '../detail_page.dart';
+import '../player_page.dart';
+import '../sniffer/sniffer_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentTab = 0;
+  final _searchController = TextEditingController();
+  int _selectedTab = 0;
+  List<UnifiedContent> _searchResults = [];
+  bool _searching = false;
+  String _lastQuery = '';
+  List<SourcePlugin> _plugins = [];
 
-  final _tabs = const ['首页', '收藏', '插件', '设置'];
-  final _icons = const [
-    Icons.home_rounded,
-    Icons.favorite_rounded,
-    Icons.extension_rounded,
-    Icons.settings_rounded,
+  static const _videoIcon = Icons.movie_filter;
+  static const _favoritesIcon = Icons.favorite;
+  static const _pluginIcon = Icons.extension;
+  static const _settingsIcon = Icons.settings;
+
+  static const _tabs = [
+    '首页',
+    '收藏',
+    '插件',
+    '设置',
   ];
 
-  @override
-  Widget build(BuildContext context) {
-    final musicService = context.watch<MusicPlayerService>();
-    final isTV = MediaQuery.of(context).size.width > 960;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      body: Column(
-        children: [
-          // 状态栏占位
-          SizedBox(height: MediaQuery.of(context).padding.top),
-          // 内容区
-          Expanded(
-            child: IndexedStack(
-              index: _currentTab,
-              children: [
-                _VideoTabPage(),
-                const FavoritesPage(),
-                const PluginPage(),
-                const SettingsPage(),
-              ],
-            ),
-          ),
-          // 迷你播放器 (音乐)
-          if (musicService.hasTrack)
-            _MiniMusicPlayer(service: musicService),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentTab,
-        onTap: (i) => setState(() => _currentTab = i),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: Colors.white,
-        selectedItemColor: const Color(0xFF2196F3),
-        unselectedItemColor: Colors.grey[500],
-        selectedFontSize: 10,
-        unselectedFontSize: 10,
-        elevation: 8,
-        items: List.generate(_tabs.length, (i) => BottomNavigationBarItem(
-          icon: Icon(_icons[i]),
-          label: _tabs[i],
-        )),
-      ),
-    );
-  }
-}
-
-/// ═══════════════════════════════════════
-///  精选 Tab — 亦搜风格
-/// ═══════════════════════════════════════
-class _VideoTabPage extends StatefulWidget {
-  @override
-  State<_VideoTabPage> createState() => __VideoTabPageState();
-}
-
-class __VideoTabPageState extends State<_VideoTabPage> {
-  List<VideoContent> _hotList = [];
-  List<VideoContent> _movies = [];
-  List<VideoContent> _tvShows = [];
-  List<VideoContent> _variety = [];
-  bool _isLoading = true;
-  int _selectedCategory = 0;
-
-  final _categories = const ['全部', '电影', '连续剧', '综艺', '动漫', '纪录片'];
+  static const _icons = [
+    _videoIcon,
+    _favoritesIcon,
+    _pluginIcon,
+    _settingsIcon,
+  ];
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadPlugins();
+    _loadSearchHistory();
   }
 
-  Future<void> _loadData() async {
-    final provider = context.read<SourceProvider>();
-    if (provider.activeSource == null) return;
-    try {
-      final items = await provider.getCategory(null, page: 1);
+  Future<void> _loadPlugins() async {
+    _plugins = await PluginService.list();
+  }
+
+  Future<void> _loadSearchHistory() async {
+    final history = await AppConfig.getSearchHistory();
+    if (history.isNotEmpty) {
+      _lastQuery = history.first;
+      _searchController.text = '';
+    }
+  }
+
+  Future<void> _search() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
+    setState(() {
+      _searching = true;
+      _lastQuery = query;
+      _searchResults = [];
+    });
+
+    // 保存搜索历史
+    await AppConfig.saveSearchHistory(query);
+
+    // 从插件获取数据
+    final sources = await AppConfig.getSources();
+    if (sources.isEmpty) {
       setState(() {
-        _hotList = items;
-        _movies = items.where((v) => v.category?.contains('电影') == true).toList();
-        _tvShows = items.where((v) => v.category?.contains('连续剧') == true || v.category?.contains('剧') == true).toList();
-        _variety = items.where((v) => v.category?.contains('综艺') == true).toList();
-        _isLoading = false;
+        _searching = false;
       });
-    } catch (_) { setState(() => _isLoading = false); }
+      return;
+    }
+
+    // 搜索所有源
+    final allResults = <UnifiedContent>[];
+    for (final source in sources) {
+      try {
+        final results = await SpiderServiceV2.searchVideo(source, query);
+        allResults.addAll(results);
+      } catch (_) {
+        // 忽略单个源错误
+      }
+    }
+
+    setState(() {
+      _searchResults = allResults;
+      _searching = false;
+    });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 搜索栏
-        _buildSearchBar(),
-        // 分类 Tab
-        _buildCategoryTabs(),
-        // 内容
-        Expanded(
-          child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : RefreshIndicator(
-                  onRefresh: _loadData,
-                  child: ListView(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    children: [
-                      _buildSection('🔥 热门推荐', _hotList.take(10).toList()),
-                      _buildSection('🎬 电影', _movies.isNotEmpty ? _movies : _hotList.where((v) => v.year != null).toList()),
-                      _buildSection('📺 连续剧', _tvShows.isNotEmpty ? _tvShows : _hotList.skip(5).take(10).toList()),
-                      _buildSection('🎤 综艺', _variety.isNotEmpty ? _variety : _hotList.skip(10).take(10).toList()),
-                    ],
-                  ),
-                ),
-        ),
-      ],
+  Future<void> _searchFromHistory(String query) async {
+    _searchController.text = query;
+    await _search();
+  }
+
+  void _goToDetail(UnifiedContent item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DetailPage(content: item)),
     );
+  }
+
+  void _goToPlayer(UnifiedContent item) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => PlayerPage(item: item)),
+    );
+  }
+
+  void _onTabChanged(int index) {
+    if (!_mounted) return;
+    setState(() {
+      _selectedTab = index;
+    });
   }
 
   Widget _buildSearchBar() {
-    return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => const AggregatedSearchScreen())),
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: BorderRadius.circular(24),
+    return Container(
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
         ),
-        child: Row(
-          children: [
-            Icon(Icons.search, color: Colors.grey[500], size: 22),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text('搜索你感兴趣的影视、漫画、小说...',
-                  style: TextStyle(color: Colors.grey[500], fontSize: 14)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(fontSize: 15),
+              decoration: InputDecoration(
+                hintText: '搜索影视、漫画、小说、音乐...',
+                hintStyle: TextStyle(color: Colors.grey),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.zero,
+              ),
+              onSubmitted: (_) => _search(),
             ),
-            // 嗅探按钮
-            GestureDetector(
-              onTap: () => Navigator.push(context,
-                  MaterialPageRoute(builder: (_) => const SnifferScreen())),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                  borderRadius: BorderRadius.circular(12),
+          ),
+          IconButton(
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SnifferScreen()),
+            ),
+            icon: const Icon(Icons.sensors, size: 22),
+          ),
+          const SizedBox(width: 4),
+          IconButton(
+            onPressed: _searching ? null : _search,
+            icon: _searching
+                ? const SizedBox(
+                    width: 22,
+                    height: 22,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.search, size: 22),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHomeTab() {
+    if (_searching) {
+      return const Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('搜索中...'),
+          ],
+        ),
+      );
+    }
+
+    if (_searchResults.isNotEmpty) {
+      return ListView.builder(
+        padding: const EdgeInsets.all(12),
+        itemCount: _searchResults.length,
+        itemBuilder: (context, index) {
+          final item = _searchResults[index];
+          return _buildContentCard(item);
+        },
+      );
+    }
+
+    // 显示搜索历史
+    final history = AppConfig.getSearchHistory();
+    return FutureBuilder<List<String>>(
+      future: history,
+      builder: (context, snapshot) {
+        final historyList = snapshot.data ?? [];
+        if (historyList.isEmpty) {
+          return _buildEmptyState();
+        }
+
+        return Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  Icon(Icons.history, size: 18),
+                  SizedBox(width: 8),
+                  Text('搜索历史', style: TextStyle(fontWeight: FontWeight.w600)),
+                  Spacer(),
+                  TextButton(
+                    onPressed: () => AppConfig.clearSearchHistory(),
+                    child: Text('清除'),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 0.6,
                 ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.radar, color: Colors.white, size: 12),
-                    SizedBox(width: 3),
-                    Text('嗅探', style: TextStyle(color: Colors.white, fontSize: 10)),
-                  ],
-                ),
+                padding: const EdgeInsets.all(12),
+                itemCount: historyList.length,
+                itemBuilder: (context, index) {
+                  final query = historyList[index];
+                  return GestureDetector(
+                    onTap: () => _searchFromHistory(query),
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surfaceVariant.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.search, size: 16, color: Colors.grey.shade600),
+                          const Spacer(),
+                          Text(
+                            query,
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildCategoryTabs() {
-    return SizedBox(
-      height: 44,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        itemCount: _categories.length,
-        itemBuilder: (context, index) {
-          final isSelected = index == _selectedCategory;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = index),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF2196F3) : Colors.grey[100],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _categories[index],
-                style: TextStyle(
-                  color: isSelected ? Colors.white : Colors.grey[700],
-                  fontSize: 13,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSection(String title, List<VideoContent> items) {
-    if (items.isEmpty) return const SizedBox.shrink();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 标题行
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+  Widget _buildContentCard(UnifiedContent item) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      elevation: 1,
+      child: InkWell(
+        onTap: () => _goToDetail(item),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
           child: Row(
             children: [
-              Text(title, style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333))),
-              const Spacer(),
-              Text('更多 >', style: TextStyle(fontSize: 12, color: Colors.grey[500])),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: item.cover.isNotEmpty
+                    ? Image.network(
+                        item.cover,
+                        width: 60,
+                        height: 80,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => const Icon(Icons.movie),
+                      )
+                    : Container(
+                        width: 60,
+                        height: 80,
+                        color: Colors.grey.shade300,
+                        child: const Icon(Icons.movie),
+                      ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    if (item.category.isNotEmpty)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          item.category,
+                          style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.primary),
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    if (item.year?.isNotEmpty == true)
+                      Text(item.year!, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                    if (item.description?.isNotEmpty == true) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description!,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Colors.grey),
             ],
           ),
         ),
-        // 横向滚动
-        SizedBox(
-          height: 160,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: items.length,
-            itemBuilder: (context, index) => _buildHorizontalCard(items[index]),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildHorizontalCard(VideoContent video) {
-    return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (_) => DetailScreen(video: video))),
-      child: Container(
-        width: 110,
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[200],
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    Image.network(video.pic, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.movie, color: Colors.grey)),
-                    ),
-                    // 标签
-                    Positioned(
-                      top: 0, left: 0,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF2196F3),
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(8)),
-                        ),
-                        child: Text(video.remark ?? '',
-                            style: const TextStyle(color: Colors.white, fontSize: 10)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(video.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: Color(0xFF333333))),
-          ],
-        ),
       ),
     );
   }
-}
 
-/// ═══════════════════════════════════════
-///  迷你音乐播放器 (底部)
-/// ═══════════════════════════════════════
-class _MiniMusicPlayer extends StatelessWidget {
-  final MusicPlayerService service;
-  const _MiniMusicPlayer({required this.service});
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.search, size: 64, color: Colors.grey.shade400),
+          const SizedBox(height: 16),
+          Text(
+            '暂无内容',
+            style: TextStyle(fontSize: 16, color: Colors.grey.shade600),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '搜索影视、漫画、小说、音乐',
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade500),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final track = service.currentTrack;
-    if (track == null) return const SizedBox.shrink();
-
-    return Container(
-      height: 56,
-      color: Colors.white,
-      child: Column(
+  Widget build() {
+    return Scaffold(
+      body: Column(
         children: [
-          // 进度条
-          LinearProgressIndicator(
-            value: service.duration.inMilliseconds > 0
-                ? service.position.inMilliseconds / service.duration.inMilliseconds
-                : 0,
-            minHeight: 1.5,
-            backgroundColor: Colors.grey[200],
-            valueColor: const AlwaysStoppedAnimation(Color(0xFF2196F3)),
-          ),
+          _buildSearchBar(),
           Expanded(
-            child: Row(
+            child: IndexedStack(
+              index: _selectedTab,
               children: [
-                const SizedBox(width: 12),
-                // 封面
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: Image.network(track.cover, width: 40, height: 40, fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      width: 40, height: 40, color: Colors.grey[200],
-                      child: const Icon(Icons.music_note, color: Colors.grey, size: 20)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                // 歌曲信息
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(track.name, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
-                      Text(track.author, maxLines: 1, overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, color: Colors.grey[500])),
-                    ],
-                  ),
-                ),
-                // 控制按钮
-                IconButton(
-                  icon: Icon(service.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      size: 32, color: const Color(0xFF333333)),
-                  onPressed: service.playOrPause,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next_rounded, size: 26),
-                  onPressed: service.next,
-                ),
+                _buildHomeTab(),
+                FavoritesPage(),
+                PluginPage(),
+                SettingsPage(),
               ],
             ),
           ),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        currentIndex: _selectedTab,
+        selectedItemColor: Theme.of(context).colorScheme.primary,
+        unselectedItemColor: Colors.grey,
+        onTap: _onTabChanged,
+        items: [
+          for (int i = 0; i < _tabs.length; i++)
+            BottomNavigationBarItem(icon: Icon(_icons[i]), label: _tabs[i]),
         ],
       ),
     );

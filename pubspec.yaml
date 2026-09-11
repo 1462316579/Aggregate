@@ -28,6 +28,9 @@ dependencies:
   media_kit_video: ^1.2.5
   media_kit_libs_video: ^1.0.4
   
+  # 音频播放
+  audioplayers: ^6.0.0
+  
   # 解析与爬虫
   html: ^0.15.4
   flutter_js: ^0.8.2
