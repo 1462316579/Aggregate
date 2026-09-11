@@ -1,5 +1,5 @@
 ## ProGuard rules for AllPlay
--keep class com.allplay.app.** { *; }
+-keep class com.hongxi.homes.app2026.** { *; }
 -keep class io.flutter.** { *; }
 
 # media_kit

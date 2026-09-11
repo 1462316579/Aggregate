@@ -27,11 +27,11 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.allplay.app"
+    namespace "com.hongxi.2026.homes"
     compileSdkVersion 34
     ndkVersion "25.2.9519653"
 
-    def applicationName = "com.allplay.app.juhe.homes.app2026.MainActivity"
+    def applicationName = "com.hongxi.homes.app2026.MainActivity"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
@@ -47,7 +47,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "com.allplay.app"
+        applicationId "com.hongxi.2026.homes"
         minSdkVersion 21
         targetSdkVersion 34
         versionCode flutterVersionCode.toInteger()

@@ -1,4 +1,4 @@
-package juhe.homes.app2026
+package com.hongxi.homes.app2026
 
 import io.flutter.embedding.android.FlutterActivity
 
