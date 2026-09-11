@@ -31,7 +31,7 @@ android {
     compileSdkVersion 34
     ndkVersion "25.2.9519653"
 
-    def applicationName = "juhe.homes.app2026.MainActivity"
+    def applicationName = "com.allplay.app.juhe.homes.app2026.MainActivity"
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_11
