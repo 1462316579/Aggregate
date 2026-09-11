@@ -582,4 +582,27 @@ class SpiderServiceV2 {
       return [];
     }
   }
+
+
+/// 聚合搜索结果
+class AggregatedSearchResult {
+  final String query;
+  final int totalResults;
+  final Map<MediaType, List<UnifiedContent>> byType;
+  final Map<String, List<UnifiedContent>> bySource;
+
+  AggregatedSearchResult({
+    required this.query,
+    required this.totalResults,
+    required this.byType,
+    required this.bySource,
+  });
+}
+
+class _SearchTaskResult {
+  final String sourceKey;
+  final MediaType mediaType;
+  final List<UnifiedContent> items;
+
+  _SearchTaskResult({required this.sourceKey, required this.mediaType, required this.items});
 }
